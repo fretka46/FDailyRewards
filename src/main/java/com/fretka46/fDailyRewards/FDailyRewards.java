@@ -1,12 +1,27 @@
 package com.fretka46.fDailyRewards;
 
+import com.fretka46.fDailyRewards.Listeners.EventListeners;
+import com.fretka46.fDailyRewards.Utils.DatabaseManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import com.fretka46.fDailyRewards.Storage.ConfigManager;
+
+import java.sql.SQLException;
 
 public final class FDailyRewards extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        // Connect to database
+        try {
+            DatabaseManager.Connection = DatabaseManager.connect();
+        } catch (SQLException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
         // Plugin startup logic
+        ConfigManager.init(this);
+
+        getServer().getPluginManager().registerEvents(new EventListeners(), this);
 
         /*
         Daily Rewards
