@@ -5,26 +5,30 @@ debug: true
 # Time after which it will be next day for rewards
 day_reset_time: "04:15"
 
+message_prefix: "<blue>[ FDailyRewards ]</blue>"
+
 menu_title: "Denní odměny"
+info_title: "Information"
+info_lore:
+  - ""
+  - "Získej denní odměny!"
+  - "Přihlaš se každý den pro speciální odměny."
 
-menu:
-  title: "Denní odměny"
-  infoTitle: "Informace"
-  infoLore: "Klikni pro víc informací."
+reward_claim_available_loreline: "Click to claim your reward"
+reward_vip_locked_loreline: "This reward is locked for VIP players only."
+reward_already_claimed: "You have already claimed your reward for today."
+reward_vip_only: "This reward is available for VIP players only."
+reward_not_yet_available: "This reward is not yet available."
+reward_previous_not_claimed: "You must claim the previous day's reward first."
 
-#
-# Dvě podporované struktury:
-# 1) Mapa: rewards.<den>.*  (doporučeno)
-# 2) List: rewardsList: - day: ...
-#
-# Klíče:
-# - vip: true/false (zda je odměna jen pro VIP)
-# - item:
-#     material: název materiálu (např. PAPER, DIAMOND)
-#     customModelData: číslo CMD (volitelné)
-#     name: zobrazený název (volitelné)
-#     lore: může být list stringů nebo jeden string (volitelné)
-# - commands: list příkazů spuštěných při vyzvednutí (bez lomítka). Lze použít placeholdery dle vašeho systému.
+reward_claimed_item:
+    material: GREEN_WOOL
+    customModelData: 0
+    name: "Odměna vyzvednuta"
+    lore:
+        - ""
+        - "Už jsi si vyzvedl svou odměnu za tento den."
+
 
 rewards:
   "1":
@@ -51,15 +55,51 @@ rewards:
       - "give %player_name% minecraft:diamond 1"
       - "tell %player_name% VIP odměna za den 2!"
 
-# Alternativní zápis přes list (pokud preferujete):
-# rewardsList:
-#   - day: 3
-#     vip: false
-#     item:
-#       material: IRON_INGOT
-#       name: "Den 3 odměna"
-#       lore:
-#         - ""
-#         - "Další zásoby"
-#     commands:
-#       - "give %player_name% minecraft:iron_ingot 5"
+  "3":
+    vip: false
+    item:
+      material: IRON_INGOT
+      customModelData: 0
+      name: "Den 3 odměna"
+      lore:
+        - ""
+        - "Pokračuj ve sbírání!"
+    commands:
+      - "give %player_name% minecraft:iron_ingot 5"
+      - "tell %player_name% Odměna za den 3!"
+
+  "4":
+    vip: false
+    item:
+      material: GOLD_INGOT
+      customModelData: 0
+      name: "Den 4 odměna"
+      lore:
+        - ""
+        - "Zlatá příležitost!"
+    commands:
+      - "give %player_name% minecraft:gold_ingot 3"
+      - "tell %player_name% Odměna za den 4!"
+
+  "5":
+    vip: true
+    item:
+      material: EMERALD
+      customModelData: 0
+      name: "VIP – Den 5"
+      lore: "Prémiová odměna pro VIP hráče"
+    commands:
+      - "give %player_name% minecraft:emerald 2"
+      - "tell %player_name% VIP odměna za den 5!"
+  "6":
+    vip: false
+    item:
+      material: COOKED_BEEF
+      customModelData: 0
+      name: "Den 6 odměna"
+      lore:
+        - ""
+        - "Dobrá strava pro dobrodruha!"
+    commands:
+      - "give %player_name% minecraft:cooked_beef 4"
+      - "tell %player_name% Odměna za den 6!"

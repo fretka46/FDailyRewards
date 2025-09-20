@@ -13,6 +13,6 @@ public class EventListeners implements Listener {
         // Open menu
 
         Log.info("Opening menu");
-        Menu.getMenu(ev.getPlayer()).open();
+        Menu.openFor(ev.getPlayer());
     }
 }

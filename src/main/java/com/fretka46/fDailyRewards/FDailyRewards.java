@@ -1,9 +1,10 @@
 package com.fretka46.fDailyRewards;
 
 import com.fretka46.fDailyRewards.Listeners.EventListeners;
-import com.fretka46.fDailyRewards.Utils.DatabaseManager;
+import com.fretka46.fDailyRewards.Storage.DatabaseManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.fretka46.fDailyRewards.Storage.ConfigManager;
+import com.fretka46.fDailyRewards.UI.MenuListener;
 
 import java.sql.SQLException;
 
@@ -22,6 +23,7 @@ public final class FDailyRewards extends JavaPlugin {
         ConfigManager.init(this);
 
         getServer().getPluginManager().registerEvents(new EventListeners(), this);
+        getServer().getPluginManager().registerEvents(new MenuListener(), this);
 
         /*
         Daily Rewards

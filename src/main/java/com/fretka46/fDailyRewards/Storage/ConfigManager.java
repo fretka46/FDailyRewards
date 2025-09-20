@@ -93,7 +93,12 @@ public class ConfigManager {
         return def;
     }
 
-    private static DailyRewardItem readItem(ConfigurationSection sec) {
+    /**
+     * Reads a returns a DailyRewardItem from the given configuration section
+     * @param sec
+     * @return
+     */
+    public static DailyRewardItem readItem(ConfigurationSection sec) {
         if (sec == null) return null;
         DailyRewardItem item = new DailyRewardItem();
         // Material
@@ -102,6 +107,8 @@ public class ConfigManager {
         item.material = mat != null ? mat : Material.PAPER;
         // CustomModelData
         item.customModelData = sec.getInt("customModelData", sec.getInt("model_data", 0));
+        // Tooltip style (namespaced key string like "minecraft:thecivia/legendary")
+        item.tooltipStyle = sec.getString("tooltipStyle", sec.getString("tooltip_style"));
         // Název
         item.name = sec.getString("name", sec.getString("display_name", ""));
         // Lore: podporujeme jak string, tak list -> spojíme \n
@@ -129,6 +136,10 @@ public class ConfigManager {
             if (md instanceof Number n) item.customModelData = n.intValue();
             else if (md instanceof String s) try { item.customModelData = Integer.parseInt(s); } catch (NumberFormatException ignored) {}
         }
+        // Tooltip style
+        Object style = map.get("tooltipStyle");
+        if (style == null) style = map.get("tooltip_style");
+        item.tooltipStyle = style == null ? null : String.valueOf(style);
         Object name = map.get("name");
         if (name == null) name = map.get("display_name");
         item.name = name == null ? "" : String.valueOf(name);

@@ -7,4 +7,5 @@ public class DailyRewardItem {
     public int customModelData;
     public String name;
     public String lore;
+    public String tooltipStyle;
 }
