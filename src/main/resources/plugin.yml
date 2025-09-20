@@ -1,0 +1,7 @@
+name: FDailyRewards
+version: '1.0-SNAPSHOT'
+main: com.fretka46.fDailyRewards.FDailyRewards
+api-version: '1.21'
+prefix: FFarby
+authors: [ fretka46 ]
+description: Farby minigame for TC
