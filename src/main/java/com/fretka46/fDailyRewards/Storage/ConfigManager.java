@@ -1,10 +1,13 @@
 package com.fretka46.fDailyRewards.Storage;
 
+import com.fretka46.fDailyRewards.Utils.Log;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -27,7 +30,18 @@ public class ConfigManager {
      * Znovu načte konfiguraci odměn z config.yml
      */
     public static void reload(JavaPlugin plugin) {
-        FileConfiguration cfg = plugin.getConfig();
+        int monthNumber = LocalDateTime.now().getMonthValue();
+        plugin.saveResource("rewardsTemplate.yml", false);
+        File rewardsFile = new File(plugin.getDataFolder(), monthNumber + "_rewards.yml");
+        if (!rewardsFile.exists()) {
+            Log.severe("Rewards config for month " + monthNumber + "_rewards.yml not found");
+            Log.severe("Please make sure that the file exists in the FDailyRewards plugin folder.");
+            Log.severe("Falling back to rewardsTemplate.yml");
+
+            // Save default template
+            rewardsFile = new File(plugin.getDataFolder(), "rewardsTemplate.yml");
+        }
+        FileConfiguration cfg = YamlConfiguration.loadConfiguration(rewardsFile);
         REWARDS_BY_DAY.clear();
 
         // Podporujeme strukturu: rewards.<den>.*
@@ -48,33 +62,6 @@ public class ConfigManager {
                 REWARDS_BY_DAY.put(day, new DailyRewardDay(day, vip, item, commands));
             }
         }
-
-        // Alternativně: podpora listu v "rewardsList: - day: ..."
-        if (cfg.isList("rewardsList")) {
-            for (Map<?, ?> map : cfg.getMapList("rewardsList")) {
-                Object dayObj = map.get("day");
-                Integer day = null;
-                if (dayObj instanceof Number n) day = n.intValue();
-                else if (dayObj instanceof String s) day = parseDay(s);
-                if (day == null) continue;
-
-                boolean vip = asBoolean(map.get("vip"), false);
-
-                DailyRewardItem item = new DailyRewardItem();
-                Object itemObj = map.get("item");
-                if (itemObj instanceof Map<?, ?> itemMap) {
-                    item = readItemFromMap(itemMap);
-                }
-
-                List<String> commands = new ArrayList<>();
-                Object cmdsObj = map.get("commands");
-                if (cmdsObj instanceof List<?> list) {
-                    for (Object o : list) if (o != null) commands.add(String.valueOf(o));
-                }
-
-                REWARDS_BY_DAY.put(day, new DailyRewardDay(day, vip, item, commands.toArray(new String[0])));
-            }
-        }
     }
 
     private static Integer parseDay(String key) {
@@ -85,18 +72,8 @@ public class ConfigManager {
         }
     }
 
-    private static boolean asBoolean(Object o, boolean def) {
-        if (o == null) return def;
-        if (o instanceof Boolean b) return b;
-        if (o instanceof Number n) return n.intValue() != 0;
-        if (o instanceof String s) return Boolean.parseBoolean(s);
-        return def;
-    }
-
     /**
      * Reads a returns a DailyRewardItem from the given configuration section
-     * @param sec
-     * @return
      */
     public static DailyRewardItem readItem(ConfigurationSection sec) {
         if (sec == null) return null;
@@ -117,39 +94,6 @@ public class ConfigManager {
             item.lore = String.join("\n", loreList);
         } else {
             item.lore = sec.getString("lore", "");
-        }
-        return item;
-    }
-
-    @SuppressWarnings("unchecked")
-    private static DailyRewardItem readItemFromMap(Map<?, ?> map) {
-        DailyRewardItem item = new DailyRewardItem();
-        Object material = map.get("material");
-        Material mat = Material.matchMaterial(material == null ? "PAPER" : String.valueOf(material));
-        item.material = mat != null ? mat : Material.PAPER;
-        Object cmd = map.get("customModelData");
-        if (cmd instanceof Number n) item.customModelData = n.intValue();
-        else if (cmd instanceof String s) try { item.customModelData = Integer.parseInt(s); } catch (NumberFormatException ignored) {}
-        else {
-            // fallback na model_data
-            Object md = map.get("model_data");
-            if (md instanceof Number n) item.customModelData = n.intValue();
-            else if (md instanceof String s) try { item.customModelData = Integer.parseInt(s); } catch (NumberFormatException ignored) {}
-        }
-        // Tooltip style
-        Object style = map.get("tooltipStyle");
-        if (style == null) style = map.get("tooltip_style");
-        item.tooltipStyle = style == null ? null : String.valueOf(style);
-        Object name = map.get("name");
-        if (name == null) name = map.get("display_name");
-        item.name = name == null ? "" : String.valueOf(name);
-        Object lore = map.get("lore");
-        if (lore instanceof List<?> list) {
-            List<String> res = new ArrayList<>();
-            for (Object o : list) if (o != null) res.add(String.valueOf(o));
-            item.lore = String.join("\n", res);
-        } else {
-            item.lore = lore == null ? "" : String.valueOf(lore);
         }
         return item;
     }

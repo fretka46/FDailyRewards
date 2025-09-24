@@ -109,9 +109,30 @@ public class Menu implements InventoryHolder {
         for (int day = 1; day <= 31; day++) {
             DailyRewardDay reward = ConfigManager.getRewardForDay(day);
             if (reward == null || reward.item == null) continue;
-            if (idx >= contentSlots.size()) break;
 
-            int slot = contentSlots.get(idx++);
+            int slot;
+
+            // 48 49 50
+            switch (day){
+                case 29:
+                    if (ConfigManager.getRewardForDay(31) != null) slot = 48;
+                    else if (ConfigManager.getRewardForDay(30) != null) slot = 48;
+                    else slot = 49;
+                    break;
+                case 30:
+                    if (ConfigManager.getRewardForDay(31) == null) slot = 50;
+                    else slot = 49;
+                    break;
+                case 31:
+                    slot = 50;
+                    break;
+                default:
+                    if (idx >= contentSlots.size()) {
+                        Log.warning("Not enough slots in the menu to display all rewards! Skipping day " + day);
+                        continue;
+                    }
+                    slot = contentSlots.get(idx++);
+            }
             var config = FDailyRewards.getPlugin(FDailyRewards.class).getConfig();
 
             ItemStack stack;
@@ -147,16 +168,16 @@ public class Menu implements InventoryHolder {
                 continue;
             }
 
-            // Dnešek
+            // This day
             if (day == DatabaseManager.getNextDayToClaim(player.getUniqueId())) {
                 if (DatabaseManager.hasClaimedRewardInLastDay(player.getUniqueId(), java.time.LocalDateTime.now())) {
-                    // Dnešek už vyzvednut -> zobraz pouze „zítra“
+                    // Today already claimed (24h cooldown) -> available tomorrow
                     stack = overrideLore(toItemStack(reward.item), config.getString("reward_claim_available_tommorow_loreline"));
                     inventory.setItem(slot, stack);
                     slotToDay.put(slot, day);
                     continue;
                 } else {
-                    // Dnešek k dispozici -> zvýraznit a přidat „klikni pro vyzvednutí“
+                    // Today is available to claim now - highlight it
                     stack = appendLore(toItemStack(reward.item), config.getString("reward_claim_available_loreline", "ERR: reward_claim_available_loreline"));
                     stack.addUnsafeEnchantment(Enchantment.UNBREAKING, 1);
                     ItemMeta meta = stack.getItemMeta();
@@ -168,7 +189,6 @@ public class Menu implements InventoryHolder {
                 }
             }
 
-            // Budoucí den
             stack = toItemStack(reward.item);
             inventory.setItem(slot, stack);
             slotToDay.put(slot, day);

@@ -3,7 +3,6 @@ package com.fretka46.fDailyRewards.UI;
 import com.fretka46.fDailyRewards.Storage.ConfigManager;
 import com.fretka46.fDailyRewards.Storage.DailyRewardDay;
 import com.fretka46.fDailyRewards.Storage.DatabaseManager;
-import com.fretka46.fDailyRewards.Utils.Log;
 import com.fretka46.fDailyRewards.Utils.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
