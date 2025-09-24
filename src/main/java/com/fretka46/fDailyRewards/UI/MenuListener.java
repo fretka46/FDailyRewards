@@ -3,6 +3,7 @@ package com.fretka46.fDailyRewards.UI;
 import com.fretka46.fDailyRewards.Storage.ConfigManager;
 import com.fretka46.fDailyRewards.Storage.DailyRewardDay;
 import com.fretka46.fDailyRewards.Storage.DatabaseManager;
+import com.fretka46.fDailyRewards.Utils.Log;
 import com.fretka46.fDailyRewards.Utils.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -37,15 +38,16 @@ public class MenuListener implements Listener {
 
         DailyRewardDay rewardDay = ConfigManager.getRewardForDay(day);
         boolean isPlayerVip = player.hasPermission("survival.premium.dailylogin");
-        Integer claimedDays = DatabaseManager.getTotalClaims(player.getUniqueId());
+        int claimedDays = DatabaseManager.getTotalClaims(player.getUniqueId());
         var localTime = java.time.LocalDateTime.now();
 
         // TODO: Improve the checks as they are not working perfectly now
 
-        // Check for VIP
-        if (rewardDay.vip && !isPlayerVip) {
-            Messages.sendTranslatedMessageTo(player, "reward_vip_only");
-            player.playSound(player.getLocation(), "thecivia:thecivia.sound.28", 1.0f, 1.0f);
+        // Check if this reward is already claimed
+        if (DatabaseManager.hasClaimedDay(player.getUniqueId(), day)) {
+            Messages.sendTranslatedMessageTo(player, "reward_already_claimed");
+            // Play a custom sound by its namespaced ID
+            player.playSound(player.getLocation(), "thecivia:thecivia.sound.27", 1.0f, 1.0f);
             return;
         }
 
@@ -56,21 +58,30 @@ public class MenuListener implements Listener {
             return;
         }
 
-        // Check if the player can claim this specific day's reward (e.g. not skipping days)
-        if (day > claimedDays + 1) {
-            if (!rewardDay.vip) {
-                Messages.sendTranslatedMessageTo(player, "reward_previous_not_claimed");
+        // Check for VIP
+        if (rewardDay.vip) {
+            if (!isPlayerVip) {
+                Messages.sendTranslatedMessageTo(player, "reward_vip_only");
                 player.playSound(player.getLocation(), "thecivia:thecivia.sound.28", 1.0f, 1.0f);
                 return;
             }
-            // VIPs can skip days but only past rewards
+
             claimReward(rewardDay, player);
             return;
         }
 
-        // Check if player already claimed today's reward
-        if (DatabaseManager.hasClaimedReward(player.getUniqueId(), localTime)) {
-            Messages.sendTranslatedMessageTo(player, "reward_already_claimed");
+
+
+        // Check if the player can claim this specific day's reward (e.g. not skipping days)
+        if (day > claimedDays + 1) {
+            Messages.sendTranslatedMessageTo(player, "reward_previous_not_claimed");
+            player.playSound(player.getLocation(), "thecivia:thecivia.sound.28", 1.0f, 1.0f);
+            return;
+        }
+
+        // Check if player already claimed last day (24h cooldown)
+        if (DatabaseManager.hasClaimedRewardInLastDay(player.getUniqueId(), localTime)) {
+            Messages.sendTranslatedMessageTo(player, "reward_already_claimed_today");
             // Play a custom sound by its namespaced ID
             player.playSound(player.getLocation(), "thecivia:thecivia.sound.27", 1.0f, 1.0f);
             return;
@@ -85,7 +96,7 @@ public class MenuListener implements Listener {
     private void claimReward(DailyRewardDay rewardDay, Player player) {
         // Mark reward as claimed in DB
         var localTime = java.time.LocalDateTime.now();
-        DatabaseManager.setRewardClaimed(player.getUniqueId(), localTime);
+        DatabaseManager.setRewardClaimed(player.getUniqueId(), localTime, rewardDay.day);
 
         player.playSound(player.getLocation(), "thecivia:thecivia.sound.34", 1.0f, 1.0f);
 
@@ -97,11 +108,18 @@ public class MenuListener implements Listener {
                     .replace("{player}", player.getName());
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), resolved);
         }
+
+        // Refresh menu
+        var inventory = player.getOpenInventory();
+        if (inventory.getTopInventory().getHolder() instanceof Menu) {
+            inventory.close();
+            Menu.openFor(player);
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onInventoryDrag(InventoryDragEvent e) {
-        if (e.getView().getTopInventory() == null) return;
+        e.getView().getTopInventory();
         if (!(e.getView().getTopInventory().getHolder() instanceof Menu)) return;
         // Deny any drag operations inside this menu
         e.setCancelled(true);

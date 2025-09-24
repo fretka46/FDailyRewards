@@ -7,27 +7,32 @@ day_reset_time: "04:15"
 
 message_prefix: "<blue>[ FDailyRewards ]</blue>"
 
-menu_title: "Denní odměny"
-info_title: "Information"
+# Deprecated - do not use
+menu_title: "<red>Denní odměny"
+info_title: "<red>Information"
 info_lore:
   - ""
-  - "Získej denní odměny!"
-  - "Přihlaš se každý den pro speciální odměny."
+  - "<red>Získej denní odměny!"
+  - "<red>Přihlaš se každý den pro speciální odměny."
 
-reward_claim_available_loreline: "Click to claim your reward"
-reward_vip_locked_loreline: "This reward is locked for VIP players only."
-reward_already_claimed: "You have already claimed your reward for today."
-reward_vip_only: "This reward is available for VIP players only."
-reward_not_yet_available: "This reward is not yet available."
-reward_previous_not_claimed: "You must claim the previous day's reward first."
+reward_claim_available_loreline: "<red>Click to claim your reward"
+reward_claim_available_tommorow_loreline: "<red>\nWill be available tomorrow"
+reward_vip_locked_loreline: "<red>This reward is locked for VIP players only."
+reward_vip_can_skip: "<red>As a VIP player, you can skip days to claim this reward."
+reward_already_claimed: "<red>You have already claimed this reward"
+reward_vip_only: "<red>This reward is available for VIP players only."
+reward_not_yet_available: "<red>This reward is not yet available."
+reward_previous_not_claimed: "<red>You must claim the previous day's reward first."
+reward_cannot_yet: "<red>You cannot claim this reward yet."
+reward_already_claimed_today: "<red>You have already claimed a reward today."
 
 reward_claimed_item:
     material: GREEN_WOOL
     customModelData: 0
-    name: "Odměna vyzvednuta"
+    name: "<red>Odměna vyzvednuta"
     lore:
         - ""
-        - "Už jsi si vyzvedl svou odměnu za tento den."
+        - "<red>Už jsi si vyzvedl svou odměnu za tento den."
 
 
 rewards:
@@ -39,7 +44,7 @@ rewards:
       name: "Den 1 odměna"
       lore:
         - ""
-        - "Získej malý start!"
+        - "<red>Získej malý start!"
     commands:
       - "give %player_name% minecraft:bread 3"
       - "tell %player_name% Užij si odměnu za den 1!"

@@ -27,7 +27,8 @@ public class DatabaseManager {
         var ps = connection.prepareStatement("CREATE TABLE IF NOT EXISTS rewards_claimed (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "uuid TEXT NOT NULL," +
-                "date TEXT NOT NULL" +
+                "date TEXT NOT NULL," +
+                "day INTEGER NOT NULL" +
                 ");");
         ps.executeUpdate();
         ps.close();
@@ -69,12 +70,13 @@ public class DatabaseManager {
     }
 
 
-    public static void setRewardClaimed(UUID uuid, LocalDateTime time) {
+    public static void setRewardClaimed(UUID uuid, LocalDateTime time, int day) {
         try {
             var date = getResetDateTime(time).toLocalDate();
-            var ps = Connection.prepareStatement("INSERT INTO rewards_claimed (uuid, date) VALUES (?, ?)");
+            var ps = Connection.prepareStatement("INSERT INTO rewards_claimed (uuid, date, day) VALUES (?, ?, ?)");
             ps.setString(1, uuid.toString());
             ps.setString(2, date.toString());
+            ps.setInt(3, day);
             ps.executeUpdate();
 
             ps.close();
@@ -84,7 +86,10 @@ public class DatabaseManager {
         }
     }
 
-    public static boolean hasClaimedReward(UUID uuid, LocalDateTime time) {
+    /**
+     * Checks if player already claimed reward to specific date
+     */
+    public static boolean hasClaimedRewardInLastDay(UUID uuid, LocalDateTime time) {
 
         try {
             var date = getResetDateTime(time).toLocalDate();
@@ -107,6 +112,59 @@ public class DatabaseManager {
         }
         catch (SQLException ex) {
             Log.severe("Database error while checking reward claim: " + ex.getMessage());
+            return true;
+        }
+    }
+
+    public static int getNextDayToClaim(UUID uuid) {
+        try {
+            var ps = Connection.prepareStatement(
+                    "SELECT day FROM rewards_claimed WHERE uuid = ? ORDER BY day ASC"
+            );
+            ps.setString(1, uuid.toString());
+            var rs = ps.executeQuery();
+
+            int expectedDay = 1;
+            while (rs.next()) {
+                int claimedDay = rs.getInt(1);
+
+                if (claimedDay < expectedDay) {
+                    continue; // duplicate or out of order entry, ignore
+                }
+                if (claimedDay == expectedDay) {
+                    expectedDay++;
+                    continue;
+                }
+                break; // found a gap
+            }
+
+            rs.close();
+            ps.close();
+            return expectedDay;
+        } catch (SQLException ex) {
+            Log.severe("Database error while getting next day to claim: " + ex.getMessage());
+            return 1; // fallback
+        }
+    }
+
+    public static boolean hasClaimedDay(UUID uuid, int day) {
+
+        try {
+            var ps = Connection.prepareStatement("SELECT COUNT(*) FROM rewards_claimed WHERE uuid = ? AND day = ?");
+            ps.setString(1, uuid.toString());
+            ps.setInt(2, day);
+
+            var rs = ps.executeQuery();
+            boolean claimed = false;
+            if (rs.next()) {
+                claimed = rs.getInt(1) > 0;
+            }
+            rs.close();
+            ps.close();
+            return claimed;
+        }
+        catch (SQLException ex) {
+            Log.severe("Database error while checking day claim: " + ex.getMessage());
             return true;
         }
     }

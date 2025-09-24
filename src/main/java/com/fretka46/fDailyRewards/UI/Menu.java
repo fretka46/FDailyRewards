@@ -5,6 +5,7 @@ import com.fretka46.fDailyRewards.Storage.ConfigManager;
 import com.fretka46.fDailyRewards.Storage.DailyRewardDay;
 import com.fretka46.fDailyRewards.Storage.DailyRewardItem;
 import com.fretka46.fDailyRewards.Storage.DatabaseManager;
+import com.fretka46.fDailyRewards.Utils.Log;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
@@ -16,6 +17,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -45,16 +47,14 @@ public class Menu implements InventoryHolder {
         var plugin = FDailyRewards.getPlugin(FDailyRewards.class);
         String title = plugin.getConfig().getString("menu_title", "Daily Rewards");
         // Create inventory with a component title (Paper API)
-        this.inventory = Bukkit.createInventory(this, SIZE, Component.text(title));
-        // Render static frame and info slot
-        buildBorder();
-        placeInfo(plugin.getConfig().getString("info_title", "Info"), plugin.getConfig().getString("info_lore", "There you can get rewards"));
+        this.inventory = Bukkit.createInventory(this, SIZE, MINI_MESSAGE.deserialize(title));
+
         // Fill content from config for this viewer
         fillDaysFromConfig(viewer);
     }
 
     @Override
-    public Inventory getInventory() {
+    public @NotNull Inventory getInventory() {
         return this.inventory;
     }
 
@@ -92,7 +92,7 @@ public class Menu implements InventoryHolder {
             for (int col = 0; col < WIDTH; col++) {
                 boolean edge = row == 0 || row == height - 1 || col == 0 || col == WIDTH - 1;
                 if (!edge) continue;
-                // Skip bottom center (info slot)
+                // Skip bottom center (info slot) !!!!
                 if (row == height - 1 && col == WIDTH / 2) continue; // slot 49 for 9x6
                 int slot = row * WIDTH + col;
                 inventory.setItem(slot, pane);
@@ -100,54 +100,97 @@ public class Menu implements InventoryHolder {
         }
     }
 
-    private void placeInfo(String title, String lore) {
-        int height = SIZE / WIDTH;
-        int infoSlot = (height - 1) * WIDTH + (WIDTH / 2); // 49 in 9x6
-        ItemStack info = new ItemStack(Material.PAPER);
-        ItemMeta meta = info.getItemMeta();
-        meta.displayName(Component.text(title == null ? "Info" : title));
-        if (lore != null && !lore.isEmpty()) {
-            List<Component> lines = splitLore(lore);
-            meta.lore(lines);
-        }
-        info.setItemMeta(meta);
-        inventory.setItem(infoSlot, info);
-    }
-
     private void fillDaysFromConfig(Player player) throws SQLException {
-        // Compute inner 7x4 grid slots once
         List<Integer> contentSlots = getInnerSlots(SIZE);
         int claimedDays = DatabaseManager.getTotalClaims(player.getUniqueId());
+        var localTime = java.time.LocalDateTime.now();
         int idx = 0;
+
         for (int day = 1; day <= 31; day++) {
             DailyRewardDay reward = ConfigManager.getRewardForDay(day);
             if (reward == null || reward.item == null) continue;
-            if (idx >= contentSlots.size()) break; // No paging yet
-            int slot = contentSlots.get(idx++);
+            if (idx >= contentSlots.size()) break;
 
+            int slot = contentSlots.get(idx++);
             var config = FDailyRewards.getPlugin(FDailyRewards.class).getConfig();
-            if (day <= claimedDays) {
-                // Already claimed
-                var claimeeItem = ConfigManager.readItem(config.getConfigurationSection("reward_claimed_item"));
-                if (claimeeItem != null) reward = new DailyRewardDay(day, reward.vip, claimeeItem, reward.commands);
-            } else if (day == claimedDays + 1) {
-                // Next available
-                // Add enchant glow + lore line
-                reward.item.lore = (reward.item.lore == null ? "" : reward.item.lore + "\n") + config.getString("reward_claim_available_loreline", "ERR: reward_claim_available_loreline");
-                var stack = toItemStack(reward.item);
-                stack.addUnsafeEnchantment(Enchantment.UNBREAKING, 1); // just to get the glow effect
+
+            ItemStack stack;
+
+            // Already claimed
+            if (DatabaseManager.hasClaimedDay(player.getUniqueId(), day)) {
+                var claimedItem = ConfigManager.readItem(config.getConfigurationSection("reward_claimed_item"));
+                stack = toItemStack(claimedItem != null ? claimedItem : reward.item);
                 inventory.setItem(slot, stack);
                 slotToDay.put(slot, day);
                 continue;
-            } else if (reward.vip && !player.hasPermission("survival.premium.dailylogin")) {
-                // VIP reward but player lacks permission
-                // Add lore line
-                reward.item.lore = (reward.item.lore == null ? "" : reward.item.lore + "\n") + config.getString("reward_vip_locked_loreline", "ERR: reward_vip_locked_loreline");
             }
 
-            inventory.setItem(slot, toItemStack(reward.item));
+            // VIP locked
+            if (reward.vip && !player.hasPermission("survival.premium.dailylogin")) {
+                stack = toItemStack(reward.item);
+                stack = appendLore(stack, config.getString("reward_vip_locked_loreline", "ERR: reward_vip_locked_loreline"));
+                inventory.setItem(slot, stack);
+                slotToDay.put(slot, day);
+                continue;
+            }
+
+            // VIP skip
+            if (day <= localTime.getDayOfMonth() && reward.vip) {
+                stack = toItemStack(reward.item);
+                stack = appendLore(stack, config.getString("reward_vip_can_skip", "ERR: reward_vip_can_skip"));
+                stack.addUnsafeEnchantment(Enchantment.UNBREAKING, 1);
+                ItemMeta meta = stack.getItemMeta();
+                meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+                stack.setItemMeta(meta);
+                inventory.setItem(slot, stack);
+                slotToDay.put(slot, day);
+                continue;
+            }
+
+            // Dnešek
+            if (day == DatabaseManager.getNextDayToClaim(player.getUniqueId())) {
+                if (DatabaseManager.hasClaimedRewardInLastDay(player.getUniqueId(), java.time.LocalDateTime.now())) {
+                    // Dnešek už vyzvednut -> zobraz pouze „zítra“
+                    stack = overrideLore(toItemStack(reward.item), config.getString("reward_claim_available_tommorow_loreline"));
+                    inventory.setItem(slot, stack);
+                    slotToDay.put(slot, day);
+                    continue;
+                } else {
+                    // Dnešek k dispozici -> zvýraznit a přidat „klikni pro vyzvednutí“
+                    stack = appendLore(toItemStack(reward.item), config.getString("reward_claim_available_loreline", "ERR: reward_claim_available_loreline"));
+                    stack.addUnsafeEnchantment(Enchantment.UNBREAKING, 1);
+                    ItemMeta meta = stack.getItemMeta();
+                    meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+                    stack.setItemMeta(meta);
+                    inventory.setItem(slot, stack);
+                    slotToDay.put(slot, day);
+                    continue;
+                }
+            }
+
+            // Budoucí den
+            stack = toItemStack(reward.item);
+            inventory.setItem(slot, stack);
             slotToDay.put(slot, day);
         }
+    }
+
+    private static ItemStack appendLore(ItemStack stack, String extra) {
+        if (extra == null || extra.isBlank()) return stack;
+        ItemMeta meta = stack.getItemMeta();
+        List<Component> lore = meta.lore() != null ? new ArrayList<>(meta.lore()) : new ArrayList<>();
+        lore.add(Component.empty());
+        lore.addAll(splitLore(extra));
+        meta.lore(lore);
+        stack.setItemMeta(meta);
+        return stack;
+    }
+
+    private static ItemStack overrideLore(ItemStack stack, String newLore) {
+        ItemMeta meta = stack.getItemMeta();
+        meta.lore(newLore == null || newLore.isBlank() ? Collections.emptyList() : splitLore(newLore));
+        stack.setItemMeta(meta);
+        return stack;
     }
 
     // ------------------------ helpers ------------------------ //
