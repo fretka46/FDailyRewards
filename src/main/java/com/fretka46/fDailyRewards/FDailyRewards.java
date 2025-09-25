@@ -1,6 +1,6 @@
 package com.fretka46.fDailyRewards;
 
-import com.fretka46.fDailyRewards.Listeners.EventListeners;
+import com.fretka46.fDailyRewards.Commands.MainCommand;
 import com.fretka46.fDailyRewards.Storage.DatabaseManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.fretka46.fDailyRewards.Storage.ConfigManager;
@@ -22,29 +22,8 @@ public final class FDailyRewards extends JavaPlugin {
         // Plugin startup logic
         ConfigManager.init(this);
 
-        getServer().getPluginManager().registerEvents(new EventListeners(), this);
         getServer().getPluginManager().registerEvents(new MenuListener(), this);
-
-        /*
-        Daily Rewards
-        - Každý den v 4.15 se hráči mohou vyzvednout odměnu / command
-        - survival.premium.dailylogin - VIP pass
-        - Configu nastavení každý den,
-         - VIP
-         - Typ itemu
-         - CustomModelData - itemtooltip
-
-        - Odměny jsou formou příkazů
-
-        - Notifikace chvilku po připojení že nemá vyzvednutou odměnu
-         - Poté každou půlhodinu
-
-         - Když to nestihne, jde to postupne takze jakoby nestihne posledni odmeny
-         - kdyz si zakoupi VIP na konci mesice, muze si vybrat vsechny VIP odmeny pred tim
-
-
-            - Možnost dělat config na další měsíc
-         */
+        registerCommand("fdailyrewards", new MainCommand());
     }
 
     @Override

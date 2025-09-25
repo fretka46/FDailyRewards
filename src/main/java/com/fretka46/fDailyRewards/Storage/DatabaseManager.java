@@ -14,7 +14,7 @@ public class DatabaseManager {
 
     public static Connection connect() throws SQLException, ClassNotFoundException {
         // Create directory if not exist
-        java.io.File dir = new java.io.File("plugins/DailyRewards");
+        java.io.File dir = new java.io.File("plugins/FDailyRewards");
         if (!dir.exists()) {
             dir.mkdirs();
             Log.info("Creating database directory: " + dir.getAbsolutePath());

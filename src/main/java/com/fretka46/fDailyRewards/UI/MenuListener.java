@@ -53,7 +53,7 @@ public class MenuListener implements Listener {
         // Check if the player can claim this specific day's reward (e.g. not a future day)
         if (day > localTime.getDayOfMonth()) {
             Messages.sendTranslatedMessageTo(player, "reward_not_yet_available");
-            player.playSound(player.getLocation(), "thecivia:thecivia.sound.28", 1.0f, 1.0f);
+            player.playSound(player.getLocation(), "thecivia:thecivia.sound.27", 1.0f, 1.0f);
             return;
         }
 
@@ -61,7 +61,7 @@ public class MenuListener implements Listener {
         if (rewardDay.vip) {
             if (!isPlayerVip) {
                 Messages.sendTranslatedMessageTo(player, "reward_vip_only");
-                player.playSound(player.getLocation(), "thecivia:thecivia.sound.28", 1.0f, 1.0f);
+                player.playSound(player.getLocation(), "thecivia:thecivia.sound.27", 1.0f, 1.0f);
                 return;
             }
 
@@ -74,7 +74,7 @@ public class MenuListener implements Listener {
         // Check if the player can claim this specific day's reward (e.g. not skipping days)
         if (day > claimedDays + 1) {
             Messages.sendTranslatedMessageTo(player, "reward_previous_not_claimed");
-            player.playSound(player.getLocation(), "thecivia:thecivia.sound.28", 1.0f, 1.0f);
+            player.playSound(player.getLocation(), "thecivia:thecivia.sound.27", 1.0f, 1.0f);
             return;
         }
 

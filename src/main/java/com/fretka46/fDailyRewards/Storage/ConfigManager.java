@@ -31,7 +31,10 @@ public class ConfigManager {
      */
     public static void reload(JavaPlugin plugin) {
         int monthNumber = LocalDateTime.now().getMonthValue();
-        plugin.saveResource("rewardsTemplate.yml", false);
+
+        if (!new File(plugin.getDataFolder(), "rewardsTemplate.yml").exists())
+            plugin.saveResource("rewardsTemplate.yml", true);
+
         File rewardsFile = new File(plugin.getDataFolder(), monthNumber + "_rewards.yml");
         if (!rewardsFile.exists()) {
             Log.severe("Rewards config for month " + monthNumber + "_rewards.yml not found");
