@@ -7,14 +7,6 @@ day_reset_time: "04:15"
 
 message_prefix: "<blue>[ FDailyRewards ]</blue>"
 
-# Deprecated - do not use
-menu_title: "<red>Denní odměny"
-info_title: "<red>Information"
-info_lore:
-  - ""
-  - "<red>Získej denní odměny!"
-  - "<red>Přihlaš se každý den pro speciální odměny."
-
 reward_claim_available_loreline: "<red>Click to claim your reward"
 reward_claim_available_tommorow_loreline: "<red>\nWill be available tomorrow"
 reward_vip_locked_loreline: "<red>This reward is locked for VIP players only."
@@ -33,3 +25,11 @@ reward_claimed_item:
     lore:
         - ""
         - "<red>Už jsi si vyzvedl svou odměnu za tento den."
+
+reward_claimed_item_vip:
+    material: BLUE_WOOL
+    customModelData: 0
+    name: "<red>Odměna vyzvednuta (VIP)"
+    lore:
+        - ""
+        - "<red>Už jsi si vyzvedl svou VIP odměnu za tento den."

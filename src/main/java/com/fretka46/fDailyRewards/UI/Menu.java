@@ -102,7 +102,6 @@ public class Menu implements InventoryHolder {
 
     private void fillDaysFromConfig(Player player) throws SQLException {
         List<Integer> contentSlots = getInnerSlots(SIZE);
-        int claimedDays = DatabaseManager.getTotalClaims(player.getUniqueId());
         var localTime = java.time.LocalDateTime.now();
         int idx = 0;
 
@@ -139,7 +138,14 @@ public class Menu implements InventoryHolder {
 
             // Already claimed
             if (DatabaseManager.hasClaimedDay(player.getUniqueId(), day)) {
-                var claimedItem = ConfigManager.readItem(config.getConfigurationSection("reward_claimed_item"));
+
+                DailyRewardItem claimedItem;
+
+                if (reward.vip)
+                    claimedItem = ConfigManager.readItem(config.getConfigurationSection("reward_claimed_item_vip"));
+                else
+                    claimedItem = ConfigManager.readItem(config.getConfigurationSection("reward_claimed_item"));
+
                 stack = toItemStack(claimedItem != null ? claimedItem : reward.item);
                 inventory.setItem(slot, stack);
                 slotToDay.put(slot, day);
