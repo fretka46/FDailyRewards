@@ -31,6 +31,14 @@ public class DatabaseManager {
                 "day INTEGER NOT NULL" +
                 ");");
         ps.executeUpdate();
+
+        ps = connection.prepareStatement("CREATE TABLE IF NOT EXISTS daily_logins (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "uuid TEXT NOT NULL," +
+                "date TEXT NOT NULL" +
+                ");");
+
+        ps.executeUpdate();
         ps.close();
 
         // Remove old entries (older than 60 days)
@@ -38,6 +46,12 @@ public class DatabaseManager {
         int deleted = ps.executeUpdate();
         if (deleted > 0) {
             Log.info("Cleaned up " + deleted + " old reward claim records.");
+        }
+
+        ps = connection.prepareStatement("DELETE FROM daily_logins WHERE date < date('now', '-60 days');");
+        deleted = ps.executeUpdate();
+        if (deleted > 0) {
+            Log.info("Cleaned up " + deleted + " old daily login records.");
         }
         ps.close();
 
@@ -186,5 +200,38 @@ public class DatabaseManager {
         return resetDateTime;
     }
 
+    public static boolean hasLoggedInToday(UUID uuid, LocalDateTime time) {
+        try {
+            var date = getResetDateTime(time).toLocalDate();
+            var ps = Connection.prepareStatement("SELECT COUNT(*) FROM daily_logins WHERE uuid = ? AND date = ?");
+            ps.setString(1, uuid.toString());
+            ps.setString(2, date.toString());
 
+            var rs = ps.executeQuery();
+            boolean loggedIn = false;
+            if (rs.next())
+                loggedIn = rs.getInt(1) > 0;
+
+            rs.close();
+            ps.close();
+            return loggedIn;
+        } catch (SQLException ex) {
+            Log.severe("Database error while checking login: " + ex.getMessage());
+            return true;
+        }
+    }
+
+    public static void setLoggedInToday(UUID uuid, LocalDateTime time) {
+        try {
+            var date = getResetDateTime(time).toLocalDate();
+            var ps = Connection.prepareStatement("INSERT INTO daily_logins (uuid, date) VALUES (?, ?)");
+            ps.setString(1, uuid.toString());
+            ps.setString(2, date.toString());
+            ps.executeUpdate();
+
+            ps.close();
+        } catch (SQLException ex) {
+            Log.severe("Database error while setting login: " + ex.getMessage());
+        }
+    }
 }

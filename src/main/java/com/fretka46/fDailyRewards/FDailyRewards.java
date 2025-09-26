@@ -1,7 +1,9 @@
 package com.fretka46.fDailyRewards;
 
 import com.fretka46.fDailyRewards.Commands.MainCommand;
+import com.fretka46.fDailyRewards.Listeners.LoginListener;
 import com.fretka46.fDailyRewards.Storage.DatabaseManager;
+import com.fretka46.fDailyRewards.Utils.Scheduler;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.fretka46.fDailyRewards.Storage.ConfigManager;
 import com.fretka46.fDailyRewards.UI.MenuListener;
@@ -24,10 +26,16 @@ public final class FDailyRewards extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new MenuListener(), this);
         registerCommand("fdailyrewards", new MainCommand());
+        getServer().getPluginManager().registerEvents(new  LoginListener(), this);
     }
 
     @Override
     public void onDisable() {
         // Plugin shutdown logic
+        var tasksEnum = Scheduler.scheduledTasks.elements();
+        while (tasksEnum.hasMoreElements()) {
+            var task = tasksEnum.nextElement();
+            task.cancel();
+        }
     }
 }

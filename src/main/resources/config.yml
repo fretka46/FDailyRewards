@@ -5,8 +5,12 @@ debug: true
 # Time after which it will be next day for rewards
 day_reset_time: "04:15"
 
+# Time interval in minutes to remind players about available reward claim
+reward_claim_available_interval: 30
+
 message_prefix: "<blue>[ FDailyRewards ]</blue>"
 
+reward_claim_available_message: "Daily reward is available for claim! use /fdailyrewards to claim it"
 reward_claim_available_loreline: "<red>Click to claim your reward"
 reward_claim_available_tommorow_loreline: "<red>\nWill be available tomorrow"
 reward_vip_locked_loreline: "<red>This reward is locked for VIP players only."
@@ -17,6 +21,11 @@ reward_not_yet_available: "<red>This reward is not yet available."
 reward_previous_not_claimed: "<red>You must claim the previous day's reward first."
 reward_cannot_yet: "<red>You cannot claim this reward yet."
 reward_already_claimed_today: "<red>You have already claimed a reward today."
+
+login_rewarded: "<green>You have received your premium daily login reward!"
+login_commands:
+  - "give %player_name%  diamond 1"
+  - "give %player_name%  gold_ingot 5"
 
 reward_claimed_item:
     material: GREEN_WOOL

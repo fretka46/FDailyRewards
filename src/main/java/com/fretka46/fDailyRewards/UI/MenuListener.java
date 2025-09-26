@@ -4,6 +4,7 @@ import com.fretka46.fDailyRewards.Storage.ConfigManager;
 import com.fretka46.fDailyRewards.Storage.DailyRewardDay;
 import com.fretka46.fDailyRewards.Storage.DatabaseManager;
 import com.fretka46.fDailyRewards.Utils.Messages;
+import com.fretka46.fDailyRewards.Utils.Scheduler;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -107,6 +108,9 @@ public class MenuListener implements Listener {
                     .replace("{player}", player.getName());
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), resolved);
         }
+
+        // Cancel scheduled message reward tasks
+        Scheduler.cancelRewardMessage(player);
 
         // Refresh menu
         var inventory = player.getOpenInventory();
