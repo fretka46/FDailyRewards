@@ -85,21 +85,6 @@ public class Menu implements InventoryHolder {
 
     // ------------------------ rendering ------------------------ //
 
-    private void buildBorder() {
-        ItemStack pane = namedItem(Material.GRAY_STAINED_GLASS_PANE, " ");
-        int height = SIZE / WIDTH;
-        for (int row = 0; row < height; row++) {
-            for (int col = 0; col < WIDTH; col++) {
-                boolean edge = row == 0 || row == height - 1 || col == 0 || col == WIDTH - 1;
-                if (!edge) continue;
-                // Skip bottom center (info slot) !!!!
-                if (row == height - 1 && col == WIDTH / 2) continue; // slot 49 for 9x6
-                int slot = row * WIDTH + col;
-                inventory.setItem(slot, pane);
-            }
-        }
-    }
-
     private void fillDaysFromConfig(Player player) throws SQLException {
         List<Integer> contentSlots = getInnerSlots(SIZE);
         var localTime = java.time.LocalDateTime.now();
@@ -178,14 +163,15 @@ public class Menu implements InventoryHolder {
 
             // This day
             if (day == nextDayToClaim) {
-                if (!isVip && ConfigManager.getRewardForDay(day -1).vip && DatabaseManager.hasClaimedRewardInTwoDays(player.getUniqueId(), localTime)) {
+                var yesterdayReward = ConfigManager.getRewardForDay(day - 1);
+                if (!isVip && yesterdayReward != null && yesterdayReward.vip && DatabaseManager.hasClaimedRewardInTwoDays(player.getUniqueId(), localTime)) {
                     // Yesterday was VIP and player is not VIP -> available tomorrow
 
                     // Check if already one day passed
                     if (DatabaseManager.hasClaimedRewardInLastDay(player.getUniqueId(), localTime.minusDays(1)))
-                        stack = overrideLore(toItemStack(reward.item), config.getString("reward_claim_available_tommorow_loreline"));
+                        stack = appendLore(toItemStack(reward.item), config.getString("reward_claim_available_tommorow_loreline"));
                     else
-                        stack = overrideLore(toItemStack(reward.item), config.getString("reward_claim_available_2_days_loreline"));
+                        stack = appendLore(toItemStack(reward.item), config.getString("reward_claim_available_2_days_loreline"));
 
                     inventory.setItem(slot, stack);
                     slotToDay.put(slot, day);
@@ -193,7 +179,7 @@ public class Menu implements InventoryHolder {
 
                 } else if (DatabaseManager.hasClaimedRewardInLastDay(player.getUniqueId(), java.time.LocalDateTime.now())) {
                     // Today already claimed (24h cooldown) -> available tomorrow
-                    stack = overrideLore(toItemStack(reward.item), config.getString("reward_claim_available_tommorow_loreline"));
+                    stack = appendLore(toItemStack(reward.item), config.getString("reward_claim_available_tommorow_loreline"));
                     inventory.setItem(slot, stack);
                     slotToDay.put(slot, day);
                     continue;
@@ -257,14 +243,6 @@ public class Menu implements InventoryHolder {
         }
         stack.setItemMeta(meta);
         return stack;
-    }
-
-    private static ItemStack namedItem(Material material, String name) {
-        ItemStack it = new ItemStack(material);
-        ItemMeta meta = it.getItemMeta();
-        meta.displayName(MINI_MESSAGE.deserialize(name));
-        it.setItemMeta(meta);
-        return it;
     }
 
     private static List<Component> splitLore(String text) {

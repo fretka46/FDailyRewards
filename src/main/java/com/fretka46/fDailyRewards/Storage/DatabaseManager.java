@@ -157,11 +157,15 @@ public class DatabaseManager {
     public static int getNextDayToClaim(UUID uuid, boolean skipVipDays) {
         try {
 
+            var now = LocalDateTime.now();
+            var monthStr = String.format("%04d-%02d", now.getYear(), now.getMonthValue());
+
             // Get all claimed days
             var ps = Connection.prepareStatement(
-                    "SELECT day FROM rewards_claimed WHERE uuid = ?"
+                    "SELECT day FROM rewards_claimed WHERE uuid = ? AND strftime('%Y-%m', date) = ?"
             );
             ps.setString(1, uuid.toString());
+            ps.setString(2, monthStr);
             var rs = ps.executeQuery();
 
             java.util.Set<Integer> claimedDays = new java.util.HashSet<>();
@@ -178,7 +182,6 @@ public class DatabaseManager {
                 if (claimedDays.contains(day)) continue;
                 if (skipVipDays && reward != null && reward.vip) continue;
 
-                Log.debug("Next day to claim: " + day);
                 return day;
             }
 
@@ -191,27 +194,32 @@ public class DatabaseManager {
         }
     }
 
-    public static boolean hasClaimedDay(UUID uuid, int day) {
+   public static boolean hasClaimedDay(UUID uuid, int day) {
+       try {
+           var now = LocalDateTime.now();
+           var monthStr = String.format("%04d-%02d", now.getYear(), now.getMonthValue());
 
-        try {
-            var ps = Connection.prepareStatement("SELECT COUNT(*) FROM rewards_claimed WHERE uuid = ? AND day = ?");
-            ps.setString(1, uuid.toString());
-            ps.setInt(2, day);
+           var ps = Connection.prepareStatement(
+               "SELECT COUNT(*) FROM rewards_claimed WHERE uuid = ? AND day = ? AND strftime('%Y-%m', date) = ?"
+           );
+           ps.setString(1, uuid.toString());
+           ps.setInt(2, day);
+           ps.setString(3, monthStr);
 
-            var rs = ps.executeQuery();
-            boolean claimed = false;
-            if (rs.next()) {
-                claimed = rs.getInt(1) > 0;
-            }
-            rs.close();
-            ps.close();
-            return claimed;
-        }
-        catch (SQLException ex) {
-            Log.severe("Database error while checking day claim: " + ex.getMessage());
-            return true;
-        }
-    }
+           var rs = ps.executeQuery();
+           boolean claimed = false;
+           if (rs.next()) {
+               claimed = rs.getInt(1) > 0;
+           }
+           rs.close();
+           ps.close();
+           return claimed;
+       }
+       catch (SQLException ex) {
+           Log.severe("Database error while checking day claim: " + ex.getMessage());
+           return true;
+       }
+   }
 
     /**
      * Get the reset date time based on the configured reset time. (DRY)

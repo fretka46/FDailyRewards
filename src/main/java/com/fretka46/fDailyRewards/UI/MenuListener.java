@@ -85,7 +85,8 @@ public class MenuListener implements Listener {
         }
 
         // Increase cooldown if !playerVip and last day was VIP
-        if (!isPlayerVip && DatabaseManager.hasClaimedRewardInTwoDays(player.getUniqueId(), localTime)) {
+        var yesterdayReward = ConfigManager.getRewardForDay(day - 1);
+        if (!isPlayerVip && yesterdayReward != null && yesterdayReward.vip && DatabaseManager.hasClaimedRewardInTwoDays(player.getUniqueId(), localTime)) {
             Messages.sendTranslatedMessageTo(player, "reward_cannot_yet");
             player.playSound(player.getLocation(), "thecivia:thecivia.sound.27", 1.0f, 1.0f);
             return;
