@@ -38,7 +38,6 @@ public class MenuListener implements Listener {
 
         DailyRewardDay rewardDay = ConfigManager.getRewardForDay(day);
         boolean isPlayerVip = player.hasPermission("survival.premium.dailylogin");
-        int claimedDays = DatabaseManager.getTotalClaims(player.getUniqueId());
         var localTime = java.time.LocalDateTime.now();
 
         // TODO: Improve the checks as they are not working perfectly now
@@ -70,10 +69,8 @@ public class MenuListener implements Listener {
             return;
         }
 
-
-
         // Check if the player can claim this specific day's reward (e.g. not skipping days)
-        if (day > claimedDays + 1) {
+        if (day > DatabaseManager.getNextDayToClaim(player.getUniqueId(), !isPlayerVip)) {
             Messages.sendTranslatedMessageTo(player, "reward_previous_not_claimed");
             player.playSound(player.getLocation(), "thecivia:thecivia.sound.27", 1.0f, 1.0f);
             return;
@@ -83,6 +80,13 @@ public class MenuListener implements Listener {
         if (DatabaseManager.hasClaimedRewardInLastDay(player.getUniqueId(), localTime)) {
             Messages.sendTranslatedMessageTo(player, "reward_already_claimed_today");
             // Play a custom sound by its namespaced ID
+            player.playSound(player.getLocation(), "thecivia:thecivia.sound.27", 1.0f, 1.0f);
+            return;
+        }
+
+        // Increase cooldown if !playerVip and last day was VIP
+        if (!isPlayerVip && DatabaseManager.hasClaimedRewardInTwoDays(player.getUniqueId(), localTime)) {
+            Messages.sendTranslatedMessageTo(player, "reward_cannot_yet");
             player.playSound(player.getLocation(), "thecivia:thecivia.sound.27", 1.0f, 1.0f);
             return;
         }

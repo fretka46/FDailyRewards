@@ -15,10 +15,8 @@ public class DatabaseManager {
     public static Connection connect() throws SQLException, ClassNotFoundException {
         // Create directory if not exist
         java.io.File dir = new java.io.File("plugins/FDailyRewards");
-        if (!dir.exists()) {
-            dir.mkdirs();
+        if (dir.mkdirs())
             Log.info("Creating database directory: " + dir.getAbsolutePath());
-        }
 
         Class.forName("org.sqlite.JDBC");
         var connection = DriverManager.getConnection("jdbc:sqlite:plugins/FDailyRewards/database.db");
@@ -42,13 +40,13 @@ public class DatabaseManager {
         ps.close();
 
         // Remove old entries (older than 60 days)
-        ps = connection.prepareStatement("DELETE FROM rewards_claimed WHERE date < date('now', '-60 days');");
+        ps = connection.prepareStatement("DELETE FROM rewards_claimed WHERE date < date('now', '-30 days');");
         int deleted = ps.executeUpdate();
         if (deleted > 0) {
             Log.info("Cleaned up " + deleted + " old reward claim records.");
         }
 
-        ps = connection.prepareStatement("DELETE FROM daily_logins WHERE date < date('now', '-60 days');");
+        ps = connection.prepareStatement("DELETE FROM daily_logins WHERE date < date('now', '-30 days');");
         deleted = ps.executeUpdate();
         if (deleted > 0) {
             Log.info("Cleaned up " + deleted + " old daily login records.");
@@ -104,7 +102,6 @@ public class DatabaseManager {
      * Checks if player already claimed reward to specific date
      */
     public static boolean hasClaimedRewardInLastDay(UUID uuid, LocalDateTime time) {
-
         try {
             var date = getResetDateTime(time).toLocalDate();
             var ps = Connection.prepareStatement("SELECT COUNT(*) FROM rewards_claimed WHERE uuid = ? AND date = ?");
@@ -130,34 +127,67 @@ public class DatabaseManager {
         }
     }
 
-    public static int getNextDayToClaim(UUID uuid) {
+    public static boolean hasClaimedRewardInTwoDays(UUID uuid, LocalDateTime time) {
         try {
+            var date = getResetDateTime(time).toLocalDate();
+            var ps = Connection.prepareStatement("SELECT COUNT(*) FROM rewards_claimed WHERE uuid = ? AND date >= ?");
+            ps.setString(1, uuid.toString());
+            ps.setString(2, date.minusDays(1).toString());
+
+            var rs = ps.executeQuery();
+            boolean claimed = false;
+            if (rs.next()) {
+                claimed = rs.getInt(1) > 0;
+            }
+            rs.close();
+            ps.close();
+            return claimed;
+        } catch (SQLException ex) {
+            Log.severe("Database error while checking reward claim: " + ex.getMessage());
+            return true;
+        }
+    }
+
+    /**
+     * Get the next day the player should claim, skipping VIP days if needed
+     * @param uuid UUID of the player
+     * @param skipVipDays whether to skip VIP days
+     * @return The next day to claim (1-based). If all days are claimed, returns maxDay + 1
+     */
+    public static int getNextDayToClaim(UUID uuid, boolean skipVipDays) {
+        try {
+
+            // Get all claimed days
             var ps = Connection.prepareStatement(
-                    "SELECT day FROM rewards_claimed WHERE uuid = ? ORDER BY day ASC"
+                    "SELECT day FROM rewards_claimed WHERE uuid = ?"
             );
             ps.setString(1, uuid.toString());
             var rs = ps.executeQuery();
 
-            int expectedDay = 1;
+            java.util.Set<Integer> claimedDays = new java.util.HashSet<>();
             while (rs.next()) {
-                int claimedDay = rs.getInt(1);
-
-                if (claimedDay < expectedDay) {
-                    continue; // duplicate or out of order entry, ignore
-                }
-                if (claimedDay == expectedDay) {
-                    expectedDay++;
-                    continue;
-                }
-                break; // found a gap
+                claimedDays.add(rs.getInt(1));
             }
-
             rs.close();
             ps.close();
-            return expectedDay;
+
+            int maxDay = ConfigManager.getAllRewards().size();
+
+            for (int day = 1; day <= maxDay; day++) {
+                var reward = ConfigManager.getRewardForDay(day);
+                if (claimedDays.contains(day)) continue;
+                if (skipVipDays && reward != null && reward.vip) continue;
+
+                Log.debug("Next day to claim: " + day);
+                return day;
+            }
+
+            // If all days are claimed, return maxDay + 1 (indicating all claimed)
+            return maxDay + 1;
+
         } catch (SQLException ex) {
             Log.severe("Database error while getting next day to claim: " + ex.getMessage());
-            return 1; // fallback
+            return 1;
         }
     }
 

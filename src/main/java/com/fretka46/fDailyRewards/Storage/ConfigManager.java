@@ -25,6 +25,9 @@ public class ConfigManager {
     public static DailyRewardDay getRewardForDay(int day) {
         return REWARDS_BY_DAY.get(day);
     }
+    public static Collection<DailyRewardDay> getAllRewards() {
+        return REWARDS_BY_DAY.values();
+    }
 
     /**
      * Znovu načte konfiguraci odměn z config.yml

@@ -104,6 +104,7 @@ public class Menu implements InventoryHolder {
         List<Integer> contentSlots = getInnerSlots(SIZE);
         var localTime = java.time.LocalDateTime.now();
         int idx = 0;
+        int nextDayToClaim = DatabaseManager.getNextDayToClaim(player.getUniqueId(), !player.hasPermission("survival.premium.dailylogin"));
 
         for (int day = 1; day <= 31; day++) {
             DailyRewardDay reward = ConfigManager.getRewardForDay(day);
@@ -133,6 +134,7 @@ public class Menu implements InventoryHolder {
                     slot = contentSlots.get(idx++);
             }
             var config = FDailyRewards.getPlugin(FDailyRewards.class).getConfig();
+            boolean isVip = player.hasPermission("survival.premium.dailylogin");
 
             ItemStack stack;
 
@@ -153,7 +155,7 @@ public class Menu implements InventoryHolder {
             }
 
             // VIP locked
-            if (reward.vip && !player.hasPermission("survival.premium.dailylogin")) {
+            if (reward.vip && !isVip) {
                 stack = toItemStack(reward.item);
                 stack = appendLore(stack, config.getString("reward_vip_locked_loreline", "ERR: reward_vip_locked_loreline"));
                 inventory.setItem(slot, stack);
@@ -175,13 +177,27 @@ public class Menu implements InventoryHolder {
             }
 
             // This day
-            if (day == DatabaseManager.getNextDayToClaim(player.getUniqueId())) {
-                if (DatabaseManager.hasClaimedRewardInLastDay(player.getUniqueId(), java.time.LocalDateTime.now())) {
+            if (day == nextDayToClaim) {
+                if (!isVip && ConfigManager.getRewardForDay(day -1).vip && DatabaseManager.hasClaimedRewardInTwoDays(player.getUniqueId(), localTime)) {
+                    // Yesterday was VIP and player is not VIP -> available tomorrow
+
+                    // Check if already one day passed
+                    if (DatabaseManager.hasClaimedRewardInLastDay(player.getUniqueId(), localTime.minusDays(1)))
+                        stack = overrideLore(toItemStack(reward.item), config.getString("reward_claim_available_tommorow_loreline"));
+                    else
+                        stack = overrideLore(toItemStack(reward.item), config.getString("reward_claim_available_2_days_loreline"));
+
+                    inventory.setItem(slot, stack);
+                    slotToDay.put(slot, day);
+                    continue;
+
+                } else if (DatabaseManager.hasClaimedRewardInLastDay(player.getUniqueId(), java.time.LocalDateTime.now())) {
                     // Today already claimed (24h cooldown) -> available tomorrow
                     stack = overrideLore(toItemStack(reward.item), config.getString("reward_claim_available_tommorow_loreline"));
                     inventory.setItem(slot, stack);
                     slotToDay.put(slot, day);
                     continue;
+
                 } else {
                     // Today is available to claim now - highlight it
                     stack = appendLore(toItemStack(reward.item), config.getString("reward_claim_available_loreline", "ERR: reward_claim_available_loreline"));

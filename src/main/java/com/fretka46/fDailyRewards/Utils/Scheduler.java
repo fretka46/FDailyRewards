@@ -21,7 +21,7 @@ public class Scheduler {
         // Cancelable with cancelRewardMessage
         var task = plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
             Messages.sendTranslatedMessageTo(player, "reward_claim_available_message");
-        }, 0L, 10 * 20L); // 20 ticks
+        }, 0L,  interval * 60 * 20L); // 20 ticks
 
         scheduledTasks.put(player, task);
     }
