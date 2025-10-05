@@ -7,6 +7,7 @@ day_reset_time: "04:15"
 
 # Time interval in minutes to remind players about available reward claim
 reward_claim_available_interval: 30
+show_reward_claim_available_message: true
 
 message_prefix: "<blue>[ FDailyRewards ]</blue>"
 

@@ -15,6 +15,7 @@ public class LoginListener implements Listener {
     {
         var player = event.getPlayer();
         var localtime = java.time.LocalDateTime.now();
+        var config = FDailyRewards.getPlugin(FDailyRewards.class).getConfig();
 
         // Check player daily rewards
         if (player.hasPermission("survival.login.tokeny") && !DatabaseManager.hasLoggedInToday(player.getUniqueId(), localtime))
@@ -23,7 +24,6 @@ public class LoginListener implements Listener {
             DatabaseManager.setLoggedInToday(player.getUniqueId(), localtime);
 
             // Execute commands
-            var config = FDailyRewards.getPlugin(FDailyRewards.class).getConfig();
             var commands = config.getStringList("login_commands");
             for (var command : commands)
             {
@@ -37,7 +37,7 @@ public class LoginListener implements Listener {
         }
 
         // Check if player can claim daily reward
-        if (DatabaseManager.hasLoggedInToday(player.getUniqueId(), localtime)) {
+        if (DatabaseManager.hasLoggedInToday(player.getUniqueId(), localtime) && config.getBoolean("show_reward_claim_available_message")) {
             Scheduler.scheduleRewardMessage(player);
         }
     }
