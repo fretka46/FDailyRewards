@@ -15,6 +15,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
@@ -208,6 +209,17 @@ public class Menu implements InventoryHolder {
             inventory.setItem(slot, stack);
             slotToDay.put(slot, day);
         }
+
+        // Fill everything else with the filler item
+        Material fillerMat = Material.GRAY_STAINED_GLASS_PANE;
+        ItemStack filler = new ItemStack(fillerMat);
+        ItemMeta fillerMeta = filler.getItemMeta();
+        fillerMeta.displayName(Component.empty());
+        fillerMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+        filler.setItemMeta(fillerMeta);
+        for (int slot : contentSlots) {
+            if (inventory.getItem(slot) == null) {
+                inventory.setItem(slot, filler);
     }
 
     private static ItemStack appendLore(ItemStack stack, String extra) {
