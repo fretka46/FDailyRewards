@@ -220,6 +220,8 @@ public class Menu implements InventoryHolder {
         for (int slot : contentSlots) {
             if (inventory.getItem(slot) == null) {
                 inventory.setItem(slot, filler);
+            }
+        }
     }
 
     private static ItemStack appendLore(ItemStack stack, String extra) {
