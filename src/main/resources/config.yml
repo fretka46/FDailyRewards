@@ -8,10 +8,10 @@ day_reset_time: "04:15"
 # Time interval in minutes to remind players about available reward claim
 reward_claim_available_interval: 30
 show_reward_claim_available_message: true
+reward_claim_available_command: "tell %player_name% Daily reward is available for claim! use /fdailyrewards to claim it"
 
 message_prefix: "<blue>[ FDailyRewards ]</blue>"
 
-reward_claim_available_message: "Daily reward is available for claim! use /fdailyrewards to claim it"
 reward_claim_available_loreline: "<red>Click to claim your reward"
 reward_claim_available_tommorow_loreline: "<red>Will be available tomorrow"
 reward_claim_available_2_days_loreline: "<red>Will be available in 2 days"

@@ -20,8 +20,12 @@ public class Scheduler {
         // Run reminder from now every 30 mins
         // Cancelable with cancelRewardMessage
         var task = plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
-            Messages.sendTranslatedMessageTo(player, "reward_claim_available_message");
-        }, 0L,  interval * 60 * 20L); // 20 ticks
+
+        // Execute command
+            var cmd = plugin.getConfig().getString("reward_claim_available_command", "tell %player_name% FDR - Claim message not configured!").replace("%player_name% ", player.getName());
+            plugin.getServer().dispatchCommand(FDailyRewards.getPlugin(FDailyRewards.class).getServer().getConsoleSender(), cmd);
+
+        }, 0L,  interval * 60 * 20L);
 
         scheduledTasks.put(player, task);
     }
