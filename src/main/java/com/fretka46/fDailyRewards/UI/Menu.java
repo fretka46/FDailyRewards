@@ -215,8 +215,7 @@ public class Menu implements InventoryHolder {
         Material fillerMat = Material.GRAY_STAINED_GLASS_PANE;
         ItemStack filler = new ItemStack(fillerMat);
         ItemMeta fillerMeta = filler.getItemMeta();
-        fillerMeta.displayName(Component.empty());
-        fillerMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+        fillerMeta.setHideTooltip(true);
         filler.setItemMeta(fillerMeta);
         for (int slot = 0; slot < SIZE; slot++) {
             if (inventory.getItem(slot) == null) {

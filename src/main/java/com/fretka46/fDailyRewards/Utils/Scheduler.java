@@ -22,7 +22,7 @@ public class Scheduler {
         var task = plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
 
         // Execute command
-            var cmd = plugin.getConfig().getString("reward_claim_available_command", "tell %player_name% FDR - Claim message not configured!").replace("%player_name% ", player.getName());
+            var cmd = plugin.getConfig().getString("reward_claim_available_command", "tell %player_name% FDR - Claim message not configured!").replace("%player_name%", player.getName());
             plugin.getServer().dispatchCommand(FDailyRewards.getPlugin(FDailyRewards.class).getServer().getConsoleSender(), cmd);
 
         }, 0L,  interval * 60 * 20L);

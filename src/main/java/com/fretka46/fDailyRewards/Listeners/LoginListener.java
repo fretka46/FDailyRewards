@@ -33,7 +33,7 @@ public class LoginListener implements Listener {
             var commands = config.getStringList("login_commands");
             for (var command : commands)
             {
-                var cmd = command.replace("%player_name% ", player.getName());
+                var cmd = command.replace("%player_name%", player.getName());
                 FDailyRewards.getPlugin(FDailyRewards.class)
                         .getServer().dispatchCommand(FDailyRewards.getPlugin(FDailyRewards.class).getServer().getConsoleSender(), cmd);
             }
