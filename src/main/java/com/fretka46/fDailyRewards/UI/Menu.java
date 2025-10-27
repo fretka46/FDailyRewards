@@ -122,6 +122,7 @@ public class Menu implements InventoryHolder {
             boolean isVip = player.hasPermission("survival.premium.dailylogin");
 
             ItemStack stack;
+            DailyRewardDay currentDayReward = ConfigManager.getRewardForDay(day);
 
             // Already claimed
             if (DatabaseManager.hasClaimedDay(player.getUniqueId(), day)) {
@@ -131,12 +132,15 @@ public class Menu implements InventoryHolder {
                 if (reward.vip) {
                     claimedItem = ConfigManager.readItem(config.getConfigurationSection("reward_claimed_item_vip"));
                     assert claimedItem != null;
-                    claimedItem.material = ConfigManager.getRewardForDay(day).item.material;
+                    claimedItem.material = currentDayReward.item.material;
                 }
                 else
                     claimedItem = ConfigManager.readItem(config.getConfigurationSection("reward_claimed_item"));
 
-                stack = toItemStack(claimedItem != null ? claimedItem : reward.item);
+                assert claimedItem != null;
+                claimedItem.name = currentDayReward.item.name;
+
+                stack = toItemStack(claimedItem);
                 inventory.setItem(slot, stack);
                 slotToDay.put(slot, day);
                 continue;
