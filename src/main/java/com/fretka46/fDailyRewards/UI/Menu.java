@@ -128,8 +128,11 @@ public class Menu implements InventoryHolder {
 
                 DailyRewardItem claimedItem;
 
-                if (reward.vip)
+                if (reward.vip) {
                     claimedItem = ConfigManager.readItem(config.getConfigurationSection("reward_claimed_item_vip"));
+                    assert claimedItem != null;
+                    claimedItem.material = ConfigManager.getRewardForDay(day).item.material;
+                }
                 else
                     claimedItem = ConfigManager.readItem(config.getConfigurationSection("reward_claimed_item"));
 
