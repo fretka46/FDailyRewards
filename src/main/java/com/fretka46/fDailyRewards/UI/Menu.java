@@ -7,6 +7,7 @@ import com.fretka46.fDailyRewards.Storage.DailyRewardItem;
 import com.fretka46.fDailyRewards.Storage.DatabaseManager;
 import com.fretka46.fDailyRewards.Utils.Log;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -210,14 +211,14 @@ public class Menu implements InventoryHolder {
             slotToDay.put(slot, day);
         }
 
-        // Fill everything else with the filler item
+        // Fill border and empty slots with filler
         Material fillerMat = Material.GRAY_STAINED_GLASS_PANE;
         ItemStack filler = new ItemStack(fillerMat);
         ItemMeta fillerMeta = filler.getItemMeta();
         fillerMeta.displayName(Component.empty());
         fillerMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         filler.setItemMeta(fillerMeta);
-        for (int slot : contentSlots) {
+        for (int slot = 0; slot < SIZE; slot++) {
             if (inventory.getItem(slot) == null) {
                 inventory.setItem(slot, filler);
             }
@@ -249,9 +250,10 @@ public class Menu implements InventoryHolder {
         ItemStack stack = new ItemStack(mat);
         ItemMeta meta = stack.getItemMeta();
         if (cfg.customModelData > 0) meta.setCustomModelData(cfg.customModelData);
-        if (cfg.name != null && !cfg.name.isEmpty()) meta.displayName(MINI_MESSAGE.deserialize(cfg.name));
+        if (cfg.name != null && !cfg.name.isEmpty())
+            meta.displayName(MINI_MESSAGE.deserialize(cfg.name).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE));
         if (cfg.lore != null && !cfg.lore.isEmpty()) meta.lore(splitLore(cfg.lore));
-        // Apply tooltip style if present (value like "minecraft:thecivia/legendary")
+        // Apply tooltip style if present ...
         if (cfg.tooltipStyle != null && !cfg.tooltipStyle.isBlank()) {
             NamespacedKey key = NamespacedKey.fromString(cfg.tooltipStyle);
             if (key != null) {
@@ -268,7 +270,9 @@ public class Menu implements InventoryHolder {
 
     private static List<Component> splitLore(String text) {
         List<Component> list = new ArrayList<>();
-        for (String line : text.split("\\r?\\n")) list.add(MINI_MESSAGE.deserialize(line));
+        for (String line : text.split("\\r?\\n")) {
+            list.add(MINI_MESSAGE.deserialize(line).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE));
+        }
         return list;
     }
 
