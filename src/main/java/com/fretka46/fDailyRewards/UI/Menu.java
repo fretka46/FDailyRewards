@@ -92,39 +92,23 @@ public class Menu implements InventoryHolder {
         var localTime = java.time.LocalDateTime.now();
         int idx = 0;
         int nextDayToClaim = DatabaseManager.getNextDayToClaim(player.getUniqueId(), !player.hasPermission("survival.premium.dailylogin"));
+        var config = FDailyRewards.getPlugin(FDailyRewards.class).getConfig();
 
         for (int day = 1; day <= 31; day++) {
             DailyRewardDay reward = ConfigManager.getRewardForDay(day);
             if (reward == null || reward.item == null) continue;
 
-            int slot;
 
-            // 48 49 50
-            switch (day){
-                case 29:
-                    if (ConfigManager.getRewardForDay(31) != null) slot = 48;
-                    else if (ConfigManager.getRewardForDay(30) != null) slot = 48;
-                    else slot = 49;
-                    break;
-                case 30:
-                    if (ConfigManager.getRewardForDay(31) == null) slot = 50;
-                    else slot = 49;
-                    break;
-                case 31:
-                    slot = 50;
-                    break;
-                default:
-                    if (idx >= contentSlots.size()) {
-                        Log.warning("Not enough slots in the menu to display all rewards! Skipping day " + day);
-                        continue;
-                    }
-                    slot = contentSlots.get(idx++);
-            }
-            var config = FDailyRewards.getPlugin(FDailyRewards.class).getConfig();
             boolean isVip = player.hasPermission("survival.premium.dailylogin");
 
             ItemStack stack;
             DailyRewardDay currentDayReward = ConfigManager.getRewardForDay(day);
+            int slot = currentDayReward.inventorySlot;
+            if (slot == -1) {
+                Log.severe("Invalid slot " + slot + " in day " + day + " Skipping this reward.");
+                continue;
+            }
+
 
             // Already claimed
             if (DatabaseManager.hasClaimedDay(player.getUniqueId(), day)) {
@@ -157,14 +141,15 @@ public class Menu implements InventoryHolder {
                 continue;
             }
 
-            // VIP skip
-            if (day <= localTime.getDayOfMonth() && reward.vip) {
-                stack = toItemStack(reward.item);
-                stack = appendLore(stack, config.getString("reward_vip_can_skip", "ERR: reward_vip_can_skip"));
+            // Skipped VIP but now VIP -> allow claim
+            if (reward.vip && day < DatabaseManager.getNextDayToClaim(player.getUniqueId(), true)) {
+                stack = appendLore(toItemStack(reward.item), config.getString("reward_vip_can_skip"));
+
                 stack.addUnsafeEnchantment(Enchantment.UNBREAKING, 1);
                 ItemMeta meta = stack.getItemMeta();
                 meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
                 stack.setItemMeta(meta);
+
                 inventory.setItem(slot, stack);
                 slotToDay.put(slot, day);
                 continue;
@@ -212,14 +197,16 @@ public class Menu implements InventoryHolder {
         }
 
         // Fill border and empty slots with filler
-        Material fillerMat = Material.GRAY_STAINED_GLASS_PANE;
-        ItemStack filler = new ItemStack(fillerMat);
-        ItemMeta fillerMeta = filler.getItemMeta();
-        fillerMeta.setHideTooltip(true);
-        filler.setItemMeta(fillerMeta);
-        for (int slot = 0; slot < SIZE; slot++) {
-            if (inventory.getItem(slot) == null) {
-                inventory.setItem(slot, filler);
+        if (config.getBoolean("fill_empty_slots", true)) {
+            Material fillerMat = Material.GRAY_STAINED_GLASS_PANE;
+            ItemStack filler = new ItemStack(fillerMat);
+            ItemMeta fillerMeta = filler.getItemMeta();
+            fillerMeta.setHideTooltip(true);
+            filler.setItemMeta(fillerMeta);
+            for (int slot = 0; slot < SIZE; slot++) {
+                if (inventory.getItem(slot) == null) {
+                    inventory.setItem(slot, filler);
+                }
             }
         }
     }

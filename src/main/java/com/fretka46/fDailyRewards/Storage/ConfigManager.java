@@ -64,8 +64,9 @@ public class ConfigManager {
                 DailyRewardItem item = readItem(sec.getConfigurationSection("item"));
                 List<String> cmdList = sec.getStringList("commands");
                 String[] commands = cmdList.toArray(new String[0]);
+                int inventorySlot = sec.getInt("inventorySlot", -1);
 
-                REWARDS_BY_DAY.put(day, new DailyRewardDay(day, vip, item, commands));
+                REWARDS_BY_DAY.put(day, new DailyRewardDay(day, vip, item, commands, inventorySlot));
             }
         }
     }

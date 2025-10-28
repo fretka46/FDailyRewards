@@ -13,6 +13,7 @@ rewards:
       # When not defined, default minecraft will be used.
       tooltipStyle: "minecraft:thecivia/legendary"
       name: "Den 1 odměna"
+      inventorySlot: 1
       lore:
         - ""
         - "<red>Získej malý start!"

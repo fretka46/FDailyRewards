@@ -10,6 +10,9 @@ reward_claim_available_interval: 30
 show_reward_claim_available_message: true
 reward_claim_available_command: "tell %player_name% Daily reward is available for claim! use /fdailyrewards to claim it"
 
+# If empty slots should be filled with filler glass
+fill_empty_slots: true
+
 message_prefix: "<blue>[ FDailyRewards ]</blue>"
 
 reward_claim_available_loreline: "<red>Click to claim your reward"

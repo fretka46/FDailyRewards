@@ -18,10 +18,13 @@ public class DailyRewardDay {
      */
     public final String[] commands;
 
-    public DailyRewardDay(int day, boolean vip, DailyRewardItem item, String[] commands) {
+    public int inventorySlot;
+
+    public DailyRewardDay(int day, boolean vip, DailyRewardItem item, String[] commands, int inventorySlot) {
         this.day = day;
         this.vip = vip;
         this.item = item;
         this.commands = commands;
+        this.inventorySlot = inventorySlot;
     }
 }

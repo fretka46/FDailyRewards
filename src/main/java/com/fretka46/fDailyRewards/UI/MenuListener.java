@@ -57,6 +57,13 @@ public class MenuListener implements Listener {
             return;
         }
 
+        // Check if the player can claim this specific day's reward (e.g. not skipping days)
+        if (day > DatabaseManager.getNextDayToClaim(player.getUniqueId(), !isPlayerVip)) {
+            Messages.sendTranslatedMessageTo(player, "reward_previous_not_claimed");
+            player.playSound(player.getLocation(), "thecivia:thecivia.sound.27", 1.0f, 1.0f);
+            return;
+        }
+
         // Check for VIP
         if (rewardDay.vip) {
             if (!isPlayerVip) {
@@ -66,13 +73,6 @@ public class MenuListener implements Listener {
             }
 
             claimReward(rewardDay, player);
-            return;
-        }
-
-        // Check if the player can claim this specific day's reward (e.g. not skipping days)
-        if (day > DatabaseManager.getNextDayToClaim(player.getUniqueId(), !isPlayerVip)) {
-            Messages.sendTranslatedMessageTo(player, "reward_previous_not_claimed");
-            player.playSound(player.getLocation(), "thecivia:thecivia.sound.27", 1.0f, 1.0f);
             return;
         }
 
