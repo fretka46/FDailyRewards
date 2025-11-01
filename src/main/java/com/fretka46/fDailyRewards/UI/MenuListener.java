@@ -3,6 +3,7 @@ package com.fretka46.fDailyRewards.UI;
 import com.fretka46.fDailyRewards.Storage.ConfigManager;
 import com.fretka46.fDailyRewards.Storage.DailyRewardDay;
 import com.fretka46.fDailyRewards.Storage.DatabaseManager;
+import com.fretka46.fDailyRewards.Utils.Log;
 import com.fretka46.fDailyRewards.Utils.Messages;
 import com.fretka46.fDailyRewards.Utils.Scheduler;
 import org.bukkit.Bukkit;
@@ -31,16 +32,22 @@ public class MenuListener implements Listener {
         int raw = e.getRawSlot();
         if (raw < 0 || raw >= e.getView().getTopInventory().getSize()) return;
 
-        Integer day = holder.getDayAt(raw);
-        if (day == null) return; // clicked border/info/empty slot
-
         if (!(e.getWhoClicked() instanceof Player player)) return;
+
+        Integer day = holder.getDayAt(raw);
+        if (day == null) {
+            var customDay = holder.getCustomItemAt(raw);
+            if (customDay != null)
+                executeCommands(customDay, player);
+
+            return;
+        }
+
+
 
         DailyRewardDay rewardDay = ConfigManager.getRewardForDay(day);
         boolean isPlayerVip = player.hasPermission("survival.premium.dailylogin");
         var localTime = java.time.LocalDateTime.now();
-
-        // TODO: Improve the checks as they are not working perfectly now
 
         // Check if this reward is already claimed
         if (DatabaseManager.hasClaimedDay(player.getUniqueId(), day)) {
@@ -105,14 +112,7 @@ public class MenuListener implements Listener {
 
         player.playSound(player.getLocation(), "thecivia:thecivia.sound.34", 1.0f, 1.0f);
 
-        if (rewardDay.commands == null) return;
-        for (String cmd : rewardDay.commands) {
-            if (cmd == null || cmd.isBlank()) continue;
-            String resolved = cmd
-                    .replace("%player_name%", player.getName())
-                    .replace("{player}", player.getName());
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), resolved);
-        }
+        executeCommands(rewardDay, player);
 
         // Cancel scheduled message reward tasks
         Scheduler.cancelRewardMessage(player);
@@ -122,6 +122,17 @@ public class MenuListener implements Listener {
         if (inventory.getTopInventory().getHolder() instanceof Menu) {
             inventory.close();
             Menu.openFor(player);
+        }
+    }
+
+    private void executeCommands(DailyRewardDay rewardDay, Player player) {
+        if (rewardDay.commands == null) return;
+        for (String cmd : rewardDay.commands) {
+            if (cmd == null || cmd.isBlank()) continue;
+            String resolved = cmd
+                    .replace("%player_name%", player.getName())
+                    .replace("{player}", player.getName());
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), resolved);
         }
     }
 

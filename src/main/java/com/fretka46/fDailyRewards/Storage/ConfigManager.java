@@ -71,7 +71,7 @@ public class ConfigManager {
         }
     }
 
-    private static Integer parseDay(String key) {
+    public static Integer parseDay(String key) {
         try {
             return Integer.parseInt(key);
         } catch (NumberFormatException ex) {

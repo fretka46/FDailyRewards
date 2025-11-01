@@ -16,13 +16,15 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.SQLException;
 import java.util.*;
+
+import static com.fretka46.fDailyRewards.Storage.ConfigManager.parseDay;
+import static com.fretka46.fDailyRewards.Storage.ConfigManager.readItem;
 
 /**
  * Custom Inventory Holder for the Daily Rewards menu.
@@ -39,6 +41,7 @@ public class Menu implements InventoryHolder {
 
     private final Inventory inventory;
     private final Map<Integer, Integer> slotToDay = new HashMap<>(); // slot index -> day (1..31)
+    private final Map<Integer, DailyRewardDay> slotToCustomItem = new HashMap<>(); // slot index -> custom item id
     private final Player viewer; // player for whom this menu was generated
 
     /**
@@ -85,12 +88,14 @@ public class Menu implements InventoryHolder {
         return slotToDay.get(rawSlot);
     }
 
+    public DailyRewardDay getCustomItemAt(int rawSlot) {
+        return slotToCustomItem.get(rawSlot);
+    }
+
     // ------------------------ rendering ------------------------ //
 
     private void fillDaysFromConfig(Player player) throws SQLException {
-        List<Integer> contentSlots = getInnerSlots(SIZE);
         var localTime = java.time.LocalDateTime.now();
-        int idx = 0;
         int nextDayToClaim = DatabaseManager.getNextDayToClaim(player.getUniqueId(), !player.hasPermission("survival.premium.dailylogin"));
         var config = FDailyRewards.getPlugin(FDailyRewards.class).getConfig();
 
@@ -116,12 +121,12 @@ public class Menu implements InventoryHolder {
                 DailyRewardItem claimedItem;
 
                 if (reward.vip) {
-                    claimedItem = ConfigManager.readItem(config.getConfigurationSection("reward_claimed_item_vip"));
+                    claimedItem = readItem(config.getConfigurationSection("reward_claimed_item_vip"));
                     assert claimedItem != null;
                     claimedItem.material = currentDayReward.item.material;
                 }
                 else
-                    claimedItem = ConfigManager.readItem(config.getConfigurationSection("reward_claimed_item"));
+                    claimedItem = readItem(config.getConfigurationSection("reward_claimed_item"));
 
                 assert claimedItem != null;
                 claimedItem.name = currentDayReward.item.name;
@@ -195,6 +200,31 @@ public class Menu implements InventoryHolder {
             inventory.setItem(slot, stack);
             slotToDay.put(slot, day);
         }
+
+        // Custom items
+        var customItems = config.getConfigurationSection("non_functional_items");
+        if (customItems != null) {
+            for (String key : customItems.getKeys(false)) {
+                var day = parseDay(key);
+                if (day == null) continue;
+
+                var sec = customItems.getConfigurationSection(key);
+                if (sec == null) continue;
+
+                var itemSec = sec.getConfigurationSection("item");
+                DailyRewardItem item = readItem(itemSec);
+                int inventorySlot = sec.getInt("inventorySlot", -1);
+                List<String> cmdList = Objects.requireNonNull(itemSec).getStringList("commands");
+                String[] commands = cmdList.toArray(new String[0]);
+
+                assert item != null;
+                var stack = toItemStack(item);
+                inventory.setItem(inventorySlot, stack);
+                slotToCustomItem.put(inventorySlot, new DailyRewardDay(-1, false, item, commands, inventorySlot));
+            }
+        }
+
+
 
         // Fill border and empty slots with filler
         if (config.getBoolean("fill_empty_slots", true)) {
