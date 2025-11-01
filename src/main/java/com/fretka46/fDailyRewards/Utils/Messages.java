@@ -3,6 +3,7 @@ package com.fretka46.fDailyRewards.Utils;
 import com.fretka46.fDailyRewards.FDailyRewards;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 public class Messages {
@@ -15,5 +16,13 @@ public class Messages {
                 FDailyRewards.class).getConfig().getString(path, "ERR: " + path + " not found in config.");
 
         player.sendMessage(MINI_MESSAGE.deserialize(PREFIX + " " + message));
+    }
+
+    public static void sendMessage(Player player, String message) {
+        player.sendMessage(MINI_MESSAGE.deserialize(PREFIX + " " + message));
+    }
+
+    public static void sendMessage(CommandSender sender, String message) {
+        sender.sendMessage(MINI_MESSAGE.deserialize(PREFIX + " " + message));
     }
 }

@@ -2,7 +2,6 @@ package com.fretka46.fDailyRewards.Commands;
 
 import com.fretka46.fDailyRewards.UI.Menu;
 import com.mojang.brigadier.context.CommandContext;
-import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;

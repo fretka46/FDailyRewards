@@ -125,7 +125,7 @@ public class MenuListener implements Listener {
         }
     }
 
-    private void executeCommands(DailyRewardDay rewardDay, Player player) {
+    public static void executeCommands(DailyRewardDay rewardDay, Player player) {
         if (rewardDay.commands == null) return;
         for (String cmd : rewardDay.commands) {
             if (cmd == null || cmd.isBlank()) continue;
