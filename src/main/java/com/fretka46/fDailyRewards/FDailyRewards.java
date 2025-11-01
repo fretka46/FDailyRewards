@@ -1,6 +1,7 @@
 package com.fretka46.fDailyRewards;
 
 import com.fretka46.fDailyRewards.Commands.MainCommand;
+import com.fretka46.fDailyRewards.Commands.Reload;
 import com.fretka46.fDailyRewards.Listeners.LoginListener;
 import com.fretka46.fDailyRewards.Storage.DatabaseManager;
 import com.fretka46.fDailyRewards.Utils.Scheduler;
@@ -26,6 +27,7 @@ public final class FDailyRewards extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new MenuListener(), this);
         registerCommand("fdailyrewards", new MainCommand());
+        registerCommand("fdailyrewards-reload", new Reload());
         getServer().getPluginManager().registerEvents(new  LoginListener(), this);
     }
 
