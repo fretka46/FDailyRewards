@@ -2,6 +2,7 @@ package com.fretka46.fDailyRewards.Commands;
 
 import com.fretka46.fDailyRewards.FDailyRewards;
 import com.fretka46.fDailyRewards.Storage.ConfigManager;
+import com.fretka46.fDailyRewards.Utils.Messages;
 import com.mojang.brigadier.context.CommandContext;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.jspecify.annotations.NullMarked;
@@ -25,7 +26,7 @@ public class Reload {
         ConfigManager.reload(plugin);
 
         // Send confirmation message
-        sender.sendMessage("Configuration reloaded successfully");
+        Messages.sendMessage(sender, "Configuration reloaded successfully!");
         return 1;
     }
 }

@@ -51,6 +51,9 @@ reward_claimed_item_vip:
         - ""
         - "<red>Už jsi si vyzvedl svou VIP odměnu za tento den."
 
+reward_claim_available_item:
+    material: LIME_WOOL
+    customModelData: 0
 
 non_functional_items:
   "1":

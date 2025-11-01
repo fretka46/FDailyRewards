@@ -148,6 +148,14 @@ public class Menu implements InventoryHolder {
 
             // Skipped VIP but now VIP -> allow claim
             if (reward.vip && day < DatabaseManager.getNextDayToClaim(player.getUniqueId(), true)) {
+
+                var claimAvailableSec = config.getConfigurationSection("reward_claim_available_item");
+                var claimAvailableItem = readItem(claimAvailableSec);
+
+                assert claimAvailableItem != null;
+                reward.item.material = claimAvailableItem.material;
+                reward.item.customModelData = claimAvailableItem.customModelData;
+
                 stack = appendLore(toItemStack(reward.item), config.getString("reward_vip_can_skip"));
 
                 stack.addUnsafeEnchantment(Enchantment.UNBREAKING, 1);
@@ -185,6 +193,14 @@ public class Menu implements InventoryHolder {
 
                 } else {
                     // Today is available to claim now - highlight it
+
+                    var claimAvailableSec = config.getConfigurationSection("reward_claim_available_item");
+                    var claimAvailableItem = readItem(claimAvailableSec);
+
+                    assert claimAvailableItem != null;
+                    reward.item.material = claimAvailableItem.material;
+                    reward.item.customModelData = claimAvailableItem.customModelData;
+
                     stack = appendLore(toItemStack(reward.item), config.getString("reward_claim_available_loreline", "ERR: reward_claim_available_loreline"));
                     stack.addUnsafeEnchantment(Enchantment.UNBREAKING, 1);
                     ItemMeta meta = stack.getItemMeta();
