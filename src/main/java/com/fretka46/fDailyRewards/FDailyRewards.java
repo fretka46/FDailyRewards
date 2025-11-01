@@ -1,10 +1,12 @@
 package com.fretka46.fDailyRewards;
 
+import com.fretka46.fDailyRewards.Commands.CommandTree;
 import com.fretka46.fDailyRewards.Commands.MainCommand;
 import com.fretka46.fDailyRewards.Commands.Reload;
 import com.fretka46.fDailyRewards.Listeners.LoginListener;
 import com.fretka46.fDailyRewards.Storage.DatabaseManager;
 import com.fretka46.fDailyRewards.Utils.Scheduler;
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.fretka46.fDailyRewards.Storage.ConfigManager;
 import com.fretka46.fDailyRewards.UI.MenuListener;
@@ -26,9 +28,11 @@ public final class FDailyRewards extends JavaPlugin {
         ConfigManager.init(this);
 
         getServer().getPluginManager().registerEvents(new MenuListener(), this);
-        registerCommand("fdailyrewards", new MainCommand());
-        registerCommand("fdailyrewards-reload", new Reload());
         getServer().getPluginManager().registerEvents(new  LoginListener(), this);
+
+        this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
+            commands.registrar().register(CommandTree.buildRoot());
+        });
     }
 
     @Override
