@@ -12,6 +12,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -149,7 +150,7 @@ public class Menu implements InventoryHolder {
             // Skipped VIP but now VIP -> allow claim
             if (reward.vip && day < DatabaseManager.getNextDayToClaim(player.getUniqueId(), true)) {
 
-                var claimAvailableSec = config.getConfigurationSection("reward_claim_available_item");
+                var claimAvailableSec = config.getConfigurationSection("reward_claim_available_item_vip");
                 var claimAvailableItem = readItem(claimAvailableSec);
 
                 assert claimAvailableItem != null;
@@ -194,7 +195,13 @@ public class Menu implements InventoryHolder {
                 } else {
                     // Today is available to claim now - highlight it
 
-                    var claimAvailableSec = config.getConfigurationSection("reward_claim_available_item");
+
+                    ConfigurationSection claimAvailableSec;
+                    if (reward.vip)
+                        claimAvailableSec = config.getConfigurationSection("reward_claim_available_item_vip");
+                    else
+                        claimAvailableSec = config.getConfigurationSection("reward_claim_available_item");
+
                     var claimAvailableItem = readItem(claimAvailableSec);
 
                     assert claimAvailableItem != null;

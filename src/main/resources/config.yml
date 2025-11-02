@@ -55,6 +55,9 @@ reward_claimed_item_vip:
 reward_claim_available_item:
     material: LIME_WOOL
     customModelData: 0
+reward_claim_available_item_vip:
+    material: YELLOW_WOOL
+    customModelData: 0
 
 non_functional_items:
   "1":
