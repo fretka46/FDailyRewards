@@ -29,6 +29,7 @@ reward_not_yet_available: "<red>This reward is not yet available."
 reward_previous_not_claimed: "<red>You must claim the previous day's reward first."
 reward_cannot_yet: "<red>You cannot claim this reward yet."
 reward_already_claimed_today: "<red>You have already claimed a reward today."
+non_functional_vip_only: "<red>This item is available for VIP players only."
 
 login_rewarded: "<green>You have received your premium daily login reward!"
 login_commands:
@@ -58,6 +59,7 @@ reward_claim_available_item:
 non_functional_items:
   "1":
     inventorySlot: 10
+    vip: false
     item:
       material: DIAMOND_BLOCK
       customModelData: 0
@@ -69,6 +71,7 @@ non_functional_items:
         - ""
   "2":
     inventorySlot: 11
+    vip: true
     item:
       material: GOLD_BLOCK
       customModelData: 0

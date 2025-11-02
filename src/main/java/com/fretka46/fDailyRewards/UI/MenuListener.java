@@ -33,12 +33,16 @@ public class MenuListener implements Listener {
         if (raw < 0 || raw >= e.getView().getTopInventory().getSize()) return;
 
         if (!(e.getWhoClicked() instanceof Player player)) return;
+        boolean isPlayerVip = player.hasPermission("survival.premium.dailylogin");
 
         Integer day = holder.getDayAt(raw);
         if (day == null) {
             var customDay = holder.getCustomItemAt(raw);
             if (customDay != null)
-                executeCommands(customDay, player);
+                if (customDay.vip && !isPlayerVip)
+                    Messages.sendTranslatedMessageTo(player, "non_functional_vip_only");
+                else
+                    executeCommands(customDay, player);
 
             return;
         }
@@ -46,7 +50,6 @@ public class MenuListener implements Listener {
 
 
         DailyRewardDay rewardDay = ConfigManager.getRewardForDay(day);
-        boolean isPlayerVip = player.hasPermission("survival.premium.dailylogin");
         var localTime = java.time.LocalDateTime.now();
 
         // Check if this reward is already claimed

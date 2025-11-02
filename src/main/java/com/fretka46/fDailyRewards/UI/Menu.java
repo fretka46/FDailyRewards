@@ -227,16 +227,17 @@ public class Menu implements InventoryHolder {
                 var sec = customItems.getConfigurationSection(key);
                 if (sec == null) continue;
 
+                int inventorySlot = sec.getInt("inventorySlot", -1);
+                var isVip = sec.getBoolean("vip", false);
                 var itemSec = sec.getConfigurationSection("item");
                 DailyRewardItem item = readItem(itemSec);
-                int inventorySlot = sec.getInt("inventorySlot", -1);
                 List<String> cmdList = Objects.requireNonNull(itemSec).getStringList("commands");
                 String[] commands = cmdList.toArray(new String[0]);
 
                 assert item != null;
                 var stack = toItemStack(item);
                 inventory.setItem(inventorySlot, stack);
-                slotToCustomItem.put(inventorySlot, new DailyRewardDay(-1, false, item, commands, inventorySlot));
+                slotToCustomItem.put(inventorySlot, new DailyRewardDay(-1, isVip, item, commands, inventorySlot));
             }
         }
 
