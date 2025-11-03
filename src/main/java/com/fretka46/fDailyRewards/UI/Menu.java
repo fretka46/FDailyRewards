@@ -121,11 +121,8 @@ public class Menu implements InventoryHolder {
 
                 DailyRewardItem claimedItem;
 
-                if (reward.vip) {
+                if (reward.vip)
                     claimedItem = readItem(config.getConfigurationSection("reward_claimed_item_vip"));
-                    assert claimedItem != null;
-                    claimedItem.material = currentDayReward.item.material;
-                }
                 else
                     claimedItem = readItem(config.getConfigurationSection("reward_claimed_item"));
 
@@ -148,7 +145,7 @@ public class Menu implements InventoryHolder {
             }
 
             // Skipped VIP but now VIP -> allow claim
-            if (reward.vip && day < DatabaseManager.getNextDayToClaim(player.getUniqueId(), true)) {
+            if (reward.vip && day < DatabaseManager.getNextDayToClaim(player.getUniqueId(), false)) {
 
                 var claimAvailableSec = config.getConfigurationSection("reward_claim_available_item_vip");
                 var claimAvailableItem = readItem(claimAvailableSec);
@@ -194,8 +191,6 @@ public class Menu implements InventoryHolder {
 
                 } else {
                     // Today is available to claim now - highlight it
-
-
                     ConfigurationSection claimAvailableSec;
                     if (reward.vip)
                         claimAvailableSec = config.getConfigurationSection("reward_claim_available_item_vip");
