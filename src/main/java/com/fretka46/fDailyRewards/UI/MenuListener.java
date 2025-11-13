@@ -118,7 +118,7 @@ public class MenuListener implements Listener {
         executeCommands(rewardDay, player);
 
         // Cancel scheduled message reward tasks
-        Scheduler.cancelRewardMessage(player);
+        Scheduler.cancelRewardMessage(player.getUniqueId());
 
         // Refresh menu
         var inventory = player.getOpenInventory();
