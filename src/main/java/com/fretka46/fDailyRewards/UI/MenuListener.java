@@ -33,7 +33,7 @@ public class MenuListener implements Listener {
         if (raw < 0 || raw >= e.getView().getTopInventory().getSize()) return;
 
         if (!(e.getWhoClicked() instanceof Player player)) return;
-        boolean isPlayerVip = player.hasPermission("survival.premium.dailylogin");
+        boolean isPlayerVip = DatabaseManager.isVipPlayer(player.getUniqueId());
 
         Integer day = holder.getDayAt(raw);
         if (day == null) {

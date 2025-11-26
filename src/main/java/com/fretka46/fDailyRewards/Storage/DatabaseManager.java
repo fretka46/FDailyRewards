@@ -37,6 +37,14 @@ public class DatabaseManager {
                 ");");
 
         ps.executeUpdate();
+
+        ps = connection.prepareStatement("CREATE TABLE IF NOT EXISTS vip_players (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "uuid TEXT NOT NULL" +
+                "month INTEGER NOT NULL" +
+                ");");
+
+
         ps.close();
 
         // Remove old entries (older than 60 days)
@@ -51,6 +59,12 @@ public class DatabaseManager {
         if (deleted > 0) {
             Log.info("Cleaned up " + deleted + " old daily login records.");
         }
+        ps = connection.prepareStatement("DELETE FROM vip_players WHERE month < strftime('%Y%m', 'now');");
+        deleted = ps.executeUpdate();
+        if (deleted > 0) {
+            Log.info("Cleaned up " + deleted + " old VIP player records.");
+        }
+
         ps.close();
 
         return connection;
@@ -270,6 +284,78 @@ public class DatabaseManager {
             ps.close();
         } catch (SQLException ex) {
             Log.severe("Database error while setting login: " + ex.getMessage());
+        }
+    }
+
+    public static boolean isVipPlayer(UUID uuid) {
+        try {
+            var now = LocalDateTime.now();
+            var monthStr = String.format("%04d%02d", now.getYear(), now.getMonthValue());
+
+            var ps = Connection.prepareStatement(
+                "SELECT COUNT(*) FROM vip_players WHERE uuid = ? AND month = ?"
+            );
+            ps.setString(1, uuid.toString());
+            ps.setString(2, monthStr);
+
+            var rs = ps.executeQuery();
+            boolean isVip = false;
+            if (rs.next()) {
+                isVip = rs.getInt(1) > 0;
+            }
+            rs.close();
+            ps.close();
+            return isVip;
+        } catch (SQLException ex) {
+            Log.severe("Database error while checking VIP status: " + ex.getMessage());
+            return false;
+        }
+    }
+
+    // Make player VIP for current month, if already is, extend by another month
+    // Returns true if extended, false if newly added
+    public static boolean makePlayerVip(UUID uuid) {
+        try {
+            var now = LocalDateTime.now();
+            var extended = false;
+
+            // Check if player is already VIP this month
+            if (isVipPlayer(uuid)) {
+                // Extend to next month
+                now = now.plusMonths(1);
+                extended = true;
+            }
+
+            var monthStr = String.format("%04d%02d", now.getYear(), now.getMonthValue());
+            var ps = Connection.prepareStatement(
+                    "INSERT INTO vip_players (uuid, month) VALUES (?, ?)"
+            );
+            ps.setString(1, uuid.toString());
+            ps.setString(2, monthStr);
+            ps.executeUpdate();
+            ps.close();
+            return extended;
+        } catch (SQLException ex) {
+            Log.severe("Database error while making player VIP: " + ex.getMessage());
+            return false;
+        }
+    }
+
+    public static boolean removePlayerVip(UUID uuid, int month) {
+        try {
+            var monthStr = String.format("%04d%02d", LocalDateTime.now().getYear(), month);
+
+            var ps = Connection.prepareStatement(
+                    "DELETE FROM vip_players WHERE uuid = ? AND month = ?"
+            );
+            ps.setString(1, uuid.toString());
+            ps.setString(2, monthStr);
+            int affected = ps.executeUpdate();
+            ps.close();
+            return affected > 0;
+        } catch (SQLException ex) {
+            Log.severe("Database error while removing player VIP: " + ex.getMessage());
+            return false;
         }
     }
 }

@@ -42,7 +42,7 @@ public class LoginListener implements Listener {
             if (!DatabaseManager.hasClaimedRewardInLastDay(player.getUniqueId(), localtime)) {
 
                 // Check if player current day reward is vip and player is not vip
-                var isVip = player.hasPermission("survival.premium.dailylogin");
+                var isVip = DatabaseManager.isVipPlayer(player.getUniqueId());
                 var nextDayClaim = DatabaseManager.getNextDayToClaim(player.getUniqueId(), !isVip);
 
                 // safety: ensure index is valid

@@ -49,7 +49,20 @@ public final class CommandTree {
                                 .then(Commands.argument("player", StringArgumentType.word())
                                         .suggests(PLAYER_SUGGESTIONS)
                                         .then(Commands.argument("day", IntegerArgumentType.integer())
-                                                .executes(Admin::SetDayExecutor)))))
+                                                .executes(Admin::SetDayExecutor))))
+
+                        .then(Commands.literal("setvip")
+                                .then(Commands.argument("player", StringArgumentType.word())
+                                        .suggests(PLAYER_SUGGESTIONS)
+                                        .executes(Admin::SetVipExecutor)))
+
+                        .then(Commands.literal("removevip")
+                                .then(Commands.argument("player", StringArgumentType.word())
+                                        .suggests(PLAYER_SUGGESTIONS)
+                                        .then(Commands.argument("month", IntegerArgumentType.integer())
+                                                .executes(Admin::RemoveVipExecutor))))
+
+                )
                 .build();
     }
 }

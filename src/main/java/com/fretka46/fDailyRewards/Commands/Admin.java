@@ -115,4 +115,49 @@ public class Admin {
 
         return 1;
     }
+
+    public static int SetVipExecutor(CommandContext<CommandSourceStack> ctx) {
+        var sender = ctx.getSource().getSender();
+        // Check permission
+        if (!sender.hasPermission("fdailyrewards.admin.setvip")) {
+            sender.sendMessage("You do not have permission to use this command.");
+            return 0;
+        }
+
+        var targetPlayer = ctx.getArgument("player", String.class);
+        var uuid = Bukkit.getOfflinePlayer(targetPlayer).getUniqueId();
+
+        var extended = DatabaseManager.makePlayerVip(uuid);
+
+
+        if (extended)
+            Messages.sendMessage(sender, "Player " + targetPlayer + " is already VIP for the current month, VIP status has been extended.");
+        else
+            Messages.sendMessage(sender,"VIP Status set to true for " + targetPlayer + " in current month");
+
+        return 1;
+    }
+
+    public static int RemoveVipExecutor(CommandContext<CommandSourceStack> ctx) {
+        var sender = ctx.getSource().getSender();
+        // Check permission
+        if (!sender.hasPermission("fdailyrewards.admin.setvip")) {
+            sender.sendMessage("You do not have permission to use this command.");
+            return 0;
+        }
+
+        var targetPlayer = ctx.getArgument("player", String.class);
+        var month = ctx.getArgument("month", Integer.class);
+        var uuid = Bukkit.getOfflinePlayer(targetPlayer).getUniqueId();
+
+        var removed = DatabaseManager.removePlayerVip(uuid, month);
+
+
+        if (removed)
+            Messages.sendMessage(sender, "Player " + targetPlayer + " VIP status has been removed for month " + month);
+        else
+            Messages.sendMessage(sender,"Player " + targetPlayer + " does not have VIP status for month " + month);
+
+        return 1;
+    }
 }

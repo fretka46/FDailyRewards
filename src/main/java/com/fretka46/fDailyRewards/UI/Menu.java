@@ -97,7 +97,7 @@ public class Menu implements InventoryHolder {
 
     private void fillDaysFromConfig(Player player) throws SQLException {
         var localTime = java.time.LocalDateTime.now();
-        int nextDayToClaim = DatabaseManager.getNextDayToClaim(player.getUniqueId(), !player.hasPermission("survival.premium.dailylogin"));
+        int nextDayToClaim = DatabaseManager.getNextDayToClaim(player.getUniqueId(), !DatabaseManager.isVipPlayer(player.getUniqueId()));
         var config = FDailyRewards.getPlugin(FDailyRewards.class).getConfig();
 
         for (int day = 1; day <= 31; day++) {
@@ -105,7 +105,7 @@ public class Menu implements InventoryHolder {
             if (reward == null || reward.item == null) continue;
 
 
-            boolean isVip = player.hasPermission("survival.premium.dailylogin");
+            boolean isVip = DatabaseManager.isVipPlayer(player.getUniqueId());
 
             ItemStack stack;
             DailyRewardDay currentDayReward = ConfigManager.getRewardForDay(day);
