@@ -40,7 +40,7 @@ public class DatabaseManager {
 
         ps = connection.prepareStatement("CREATE TABLE IF NOT EXISTS vip_players (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                "uuid TEXT NOT NULL" +
+                "uuid TEXT NOT NULL," +
                 "month INTEGER NOT NULL" +
                 ");");
 
