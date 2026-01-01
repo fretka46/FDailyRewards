@@ -160,4 +160,42 @@ public class Admin {
 
         return 1;
     }
+
+    public static int UnlockMissedExecutor(CommandContext<CommandSourceStack> ctx) {
+        var sender = ctx.getSource().getSender();
+        // Check permission
+        if (!sender.hasPermission("fdailyrewards.admin.unlockmissed")) {
+            sender.sendMessage("You do not have permission to use this command.");
+            return 0;
+        }
+
+        var targetPlayer = ctx.getArgument("player", String.class);
+        var player = Bukkit.getPlayerExact(targetPlayer);
+        // Check online status
+        if (player == null) {
+            Messages.sendMessage(sender, "Player " + targetPlayer + " is not currently online.");
+            return 0;
+        }
+
+        // Get missed days
+        var uuid = Bukkit.getOfflinePlayer(targetPlayer).getUniqueId();
+        var missedDays = DatabaseManager.getMissedDays(uuid);
+
+        // Unlock missed days, where allowed
+        int unlockedDays = 0;
+        var isVip = DatabaseManager.isVipPlayer(uuid);
+        for (var day : missedDays) {
+            if (day.vip && !isVip)
+                continue; // skip VIP rewards for non-VIP players
+
+            MenuListener.executeCommands(day, player);
+            unlockedDays++;
+        }
+
+        Messages.sendMessage(sender,"Unlocked " + unlockedDays + " for player " + targetPlayer);
+        Messages.sendMessage(player, "Odemčeno dní: " + unlockedDays);
+        player.playSound(player.getLocation(), "thecivia:thecivia.sound.34", 1.0f, 1.0f);
+
+        return 1;
+    }
 }

@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 public class DatabaseManager {
@@ -357,5 +358,42 @@ public class DatabaseManager {
             Log.severe("Database error while removing player VIP: " + ex.getMessage());
             return false;
         }
+    }
+
+    public static List<DailyRewardDay> getMissedDays(UUID uuid) {
+        var missedDays = new java.util.ArrayList<DailyRewardDay>();
+        try {
+            var now = LocalDateTime.now();
+            var monthStr = String.format("%04d-%02d", now.getYear(), now.getMonthValue());
+
+            // Get all claimed days
+            var ps = Connection.prepareStatement(
+                    "SELECT day FROM rewards_claimed WHERE uuid = ? AND strftime('%Y-%m', date) = ?"
+            );
+            ps.setString(1, uuid.toString());
+            ps.setString(2, monthStr);
+            var rs = ps.executeQuery();
+
+            java.util.Set<Integer> claimedDays = new java.util.HashSet<>();
+            while (rs.next()) {
+                claimedDays.add(rs.getInt(1));
+            }
+            rs.close();
+            ps.close();
+
+            // Max day = all rewards except today and later
+            int maxDay = now.getDayOfMonth();
+
+            for (int day = 1; day <= maxDay; day++) {
+                var reward = ConfigManager.getRewardForDay(day);
+                if (!claimedDays.contains(day)) {
+                    missedDays.add(reward);
+                }
+            }
+
+        } catch (SQLException ex) {
+            Log.severe("Database error while getting missed days: " + ex.getMessage());
+        }
+        return missedDays;
     }
 }

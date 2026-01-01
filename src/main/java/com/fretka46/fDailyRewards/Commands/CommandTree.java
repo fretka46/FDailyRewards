@@ -51,6 +51,11 @@ public final class CommandTree {
                                         .then(Commands.argument("day", IntegerArgumentType.integer())
                                                 .executes(Admin::SetDayExecutor))))
 
+                        .then(Commands.literal("unlockmissed")
+                                .then(Commands.argument("player", StringArgumentType.word())
+                                        .suggests(PLAYER_SUGGESTIONS)
+                                        .executes(Admin::UnlockMissedExecutor)))
+
                         .then(Commands.literal("setvip")
                                 .then(Commands.argument("player", StringArgumentType.word())
                                         .suggests(PLAYER_SUGGESTIONS)
