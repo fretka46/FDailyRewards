@@ -10,6 +10,8 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import java.time.LocalDateTime;
+
 public class Admin {
 
     public static int ResetDayExecutor(CommandContext<CommandSourceStack> ctx) {
@@ -87,6 +89,7 @@ public class Admin {
 
 
         MenuListener.executeCommands(reward, player);
+        DatabaseManager.setRewardClaimed(player.getUniqueId(), LocalDateTime.now(), reward.day);
         player.playSound(player.getLocation(), "thecivia:thecivia.sound.34", 1.0f, 1.0f);
         Messages.sendMessage(player, "Byla ti věnována odměna za den " + day + ", yayy!");
 
@@ -188,6 +191,7 @@ public class Admin {
             if (day.vip && !isVip)
                 continue; // skip VIP rewards for non-VIP players
 
+            DatabaseManager.setRewardClaimed(player.getUniqueId(), LocalDateTime.now(), day.day);
             MenuListener.executeCommands(day, player);
             unlockedDays++;
         }
