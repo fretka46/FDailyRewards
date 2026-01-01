@@ -99,13 +99,11 @@ public class Menu implements InventoryHolder {
         var localTime = java.time.LocalDateTime.now();
         int nextDayToClaim = DatabaseManager.getNextDayToClaim(player.getUniqueId(), !DatabaseManager.isVipPlayer(player.getUniqueId()));
         var config = FDailyRewards.getPlugin(FDailyRewards.class).getConfig();
+        boolean isVip = DatabaseManager.isVipPlayer(player.getUniqueId());
 
         for (int day = 1; day <= 31; day++) {
             DailyRewardDay reward = ConfigManager.getRewardForDay(day);
             if (reward == null || reward.item == null) continue;
-
-
-            boolean isVip = DatabaseManager.isVipPlayer(player.getUniqueId());
 
             ItemStack stack;
             DailyRewardDay currentDayReward = ConfigManager.getRewardForDay(day);
@@ -230,7 +228,7 @@ public class Menu implements InventoryHolder {
                 if (sec == null) continue;
 
                 int inventorySlot = sec.getInt("inventorySlot", -1);
-                var isVip = sec.getBoolean("vip", false);
+                var isCustomItemVip = sec.getBoolean("vip", false);
                 var itemSec = sec.getConfigurationSection("item");
                 DailyRewardItem item = readItem(itemSec);
                 List<String> cmdList = Objects.requireNonNull(itemSec).getStringList("commands");
@@ -239,7 +237,7 @@ public class Menu implements InventoryHolder {
                 assert item != null;
                 var stack = toItemStack(item);
                 inventory.setItem(inventorySlot, stack);
-                slotToCustomItem.put(inventorySlot, new DailyRewardDay(-1, isVip, item, commands, inventorySlot));
+                slotToCustomItem.put(inventorySlot, new DailyRewardDay(-1, isCustomItemVip, item, commands, inventorySlot));
             }
         }
 
