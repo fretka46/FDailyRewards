@@ -5,3 +5,4 @@ api-version: '1.21'
 prefix: FDailyRewards
 authors: [ fretka46 ]
 description: Daily rewards plugin for TheCivia
+softdepend: [PlaceholderAPI]
