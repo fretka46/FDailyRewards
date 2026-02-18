@@ -1,6 +1,5 @@
 package com.fretka46.fDailyRewards.Utils;
 
-import com.fretka46.fDailyRewards.FDailyRewards;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -10,13 +9,13 @@ import org.bukkit.entity.Player;
  */
 public class PlaceholderAPIIntegration {
 
-    private static boolean isPlaceholderAPIAvailable = false;
+    private static volatile boolean isPlaceholderAPIAvailable = false;
 
     /**
      * Check if PlaceholderAPI is installed and enabled on the server.
      * This should be called during plugin initialization.
      */
-    public static void initialize() {
+    public static synchronized void initialize() {
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             isPlaceholderAPIAvailable = true;
             Log.info("PlaceholderAPI found! Placeholder support enabled.");
@@ -42,16 +41,12 @@ public class PlaceholderAPIIntegration {
      * @return The message with placeholders replaced
      */
     public static String parsePlaceholders(Player player, String message) {
-        if (!isPlaceholderAPIAvailable) {
+        if (!isPlaceholderAPIAvailable || message == null) {
             return message;
         }
         
-        // Import statement would be here once dependencies are resolved:
-        // import me.clip.placeholderapi.PlaceholderAPI;
-        // return PlaceholderAPI.setPlaceholders(player, message);
-        
-        // For now, we'll use reflection to avoid compilation errors
-        // when PlaceholderAPI is not available
+        // Use reflection to call PlaceholderAPI at runtime
+        // This approach allows the plugin to work even when PlaceholderAPI is not present
         try {
             Class<?> papiClass = Class.forName("me.clip.placeholderapi.PlaceholderAPI");
             java.lang.reflect.Method method = papiClass.getMethod("setPlaceholders", Player.class, String.class);
