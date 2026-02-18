@@ -4,8 +4,11 @@ import com.fretka46.fDailyRewards.Commands.CommandTree;
 import com.fretka46.fDailyRewards.Listeners.LeftListener;
 import com.fretka46.fDailyRewards.Listeners.LoginListener;
 import com.fretka46.fDailyRewards.Storage.DatabaseManager;
+import com.fretka46.fDailyRewards.Utils.PapiExpansion;
 import com.fretka46.fDailyRewards.Utils.Scheduler;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
+
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.fretka46.fDailyRewards.Storage.ConfigManager;
 import com.fretka46.fDailyRewards.UI.MenuListener;
@@ -35,6 +38,11 @@ public final class FDailyRewards extends JavaPlugin {
         this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
             commands.registrar().register(CommandTree.buildRoot());
         });
+
+        // Register PlaceholderAPI expansion if present
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            new PapiExpansion(this).register();
+        }
     }
 
     @Override

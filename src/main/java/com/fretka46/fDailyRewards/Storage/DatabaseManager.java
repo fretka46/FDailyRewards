@@ -209,6 +209,31 @@ public class DatabaseManager {
         }
     }
 
+    public static int getLastClaimedDay(UUID uuid) {
+        try {
+            var now = LocalDateTime.now();
+            var monthStr = String.format("%04d-%02d", now.getYear(), now.getMonthValue());
+
+            var ps = Connection.prepareStatement(
+                    "SELECT day FROM rewards_claimed WHERE uuid = ? AND strftime('%Y-%m', date) = ? ORDER BY day DESC LIMIT 1"
+            );
+            ps.setString(1, uuid.toString());
+            ps.setString(2, monthStr);
+            var rs = ps.executeQuery();
+
+            int lastDay = 0;
+            if (rs.next()) {
+                lastDay = rs.getInt(1);
+            }
+            rs.close();
+            ps.close();
+            return lastDay;
+        } catch (SQLException ex) {
+            Log.severe("Database error while getting last claimed day: " + ex.getMessage());
+            return 0;
+        }
+    }
+
    public static boolean hasClaimedDay(UUID uuid, int day) {
        try {
            var now = LocalDateTime.now();
