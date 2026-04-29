@@ -45,6 +45,8 @@ public class DatabaseManager {
                 "month INTEGER NOT NULL" +
                 ");");
 
+        ps.executeUpdate();
+
 
         ps.close();
 
